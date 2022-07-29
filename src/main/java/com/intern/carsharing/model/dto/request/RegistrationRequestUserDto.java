@@ -2,12 +2,13 @@ package com.intern.carsharing.model.dto.request;
 
 import com.intern.carsharing.lib.FieldsValueMatch;
 import com.intern.carsharing.lib.ValidEmail;
-import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 
 @FieldsValueMatch(
         field = "password",
@@ -16,6 +17,7 @@ import lombok.Getter;
 )
 
 @Getter
+@Setter
 public class RegistrationRequestUserDto {
     @ValidEmail
     private String email;
@@ -38,5 +40,5 @@ public class RegistrationRequestUserDto {
     @Size(min = 9, max = 9, message = "The driver's license number must contain 9 characters")
     private String driverLicence;
     @NotNull(message = "Roles field can't be empty")
-    private List<String> roles;
+    private Set<String> roles;
 }

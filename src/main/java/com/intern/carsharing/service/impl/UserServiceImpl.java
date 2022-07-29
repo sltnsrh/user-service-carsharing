@@ -3,7 +3,6 @@ package com.intern.carsharing.service.impl;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.UserService;
-import com.intern.carsharing.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserMapper mapper;
 
     @Override
     public User findByEmail(String email) {

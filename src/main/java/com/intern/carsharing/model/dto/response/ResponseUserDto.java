@@ -1,6 +1,6 @@
 package com.intern.carsharing.model.dto.response;
 
-import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +14,6 @@ public class ResponseUserDto {
     private String lastName;
     private int age;
     private String driverLicence;
-    private List<String> roles;
+    private Set<String> roles;
+    private String status;
 }
