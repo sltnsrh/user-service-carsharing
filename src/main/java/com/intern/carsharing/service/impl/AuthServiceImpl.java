@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
@@ -20,7 +21,7 @@ public class AuthServiceImpl implements AuthService {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
         if (user != null) {
-            throw new RuntimeException("User with email " + email + " is already exist");
+            throw new UserAlreadyExistException("User with email " + email + " is already exist");
         }
         user = mapper.toModel(requestUserDto);
         return mapper.toDto(userService.save(user));
