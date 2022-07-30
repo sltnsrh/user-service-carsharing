@@ -4,6 +4,7 @@ import com.intern.carsharing.lib.FieldsValueMatch;
 import com.intern.carsharing.lib.ValidEmail;
 import java.util.Set;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @FieldsValueMatch(
         field = "password",
         fieldMatch = "repeatPassword",
-        message = "Passwords do not match!"
+        message = "Passwords do not match"
 )
 
 @Getter
@@ -21,11 +22,9 @@ import lombok.Setter;
 public class RegistrationRequestUserDto {
     @ValidEmail
     private String email;
-    @NotEmpty(message = "Password field can't be empty")
-    @Size(min = 6, message = "Password must be between min 6 characters long")
-    private String password;
-    @NotEmpty(message = "Repeat password field can't be empty")
+    @NotBlank(message = "Password field can't be empty or blank")
     @Size(min = 6, message = "Password must be min 6 characters long")
+    private String password;
     private String repeatPassword;
     @NotEmpty(message = "First name field can't be empty")
     @Size(min = 3, message = "The length of the first name must be at least 3 characters")
