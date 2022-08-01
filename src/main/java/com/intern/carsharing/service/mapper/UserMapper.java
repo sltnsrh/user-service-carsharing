@@ -1,8 +1,12 @@
 package com.intern.carsharing.service.mapper;
 
+import com.intern.carsharing.model.Role;
+import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.service.RoleService;
+import com.intern.carsharing.service.StatusService;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +17,20 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMapper implements RequestDtoMapper<User, RegistrationRequestUserDto>,
         ResponseDtoMapper<User, ResponseUserDto> {
+    private static final String STATUS_ENABLE = "ENABLE";
     private final ModelMapper mapper;
+    private final StatusService statusService;
+    private final RoleService roleService;
 
     @Override
     public User toModel(RegistrationRequestUserDto dto) {
-        return mapper.map(dto, User.class);
+        User user = mapper.map(dto, User.class);
+        Set<Role> roles = dto.getRoles().stream()
+                .map(role -> roleService.findByName(Role.RoleName.valueOf(role)))
+                .collect(Collectors.toSet());
+        user.setRoles(roles);
+        user.setStatus(statusService.findByStatusType(Status.StatusType.valueOf(STATUS_ENABLE)));
+        return user;
     }
 
     @Override
