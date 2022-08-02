@@ -16,7 +16,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final UserMapper mapper;
 
-
     @Override
     public ResponseUserDto register(RegistrationRequestUserDto requestUserDto) {
         String email = requestUserDto.getEmail();
