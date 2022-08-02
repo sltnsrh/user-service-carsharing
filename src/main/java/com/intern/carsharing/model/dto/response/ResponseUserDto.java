@@ -1,11 +1,9 @@
 package com.intern.carsharing.model.dto.response;
 
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class ResponseUserDto {
     private Long id;
     private String email;
