@@ -10,11 +10,9 @@ import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,11 +42,15 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        User user = userService.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("Can't found user with email: " + email);
+        if (!userExist(email)) {
+            throw new UsernameNotFoundException("User with email: " + email + " isn't exist");
         }
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (BadCredentialsException e) {
+            throw new UsernameNotFoundException("Wrong password, try again");
+        }
+        User user = userService.findByEmail(email);
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         return new LoginResponseDto(email, jwtToken);
     }

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,5 +36,16 @@ public class ApiExceptionHandler {
                 ZonedDateTime.now()
         );
         return new ResponseEntity<>(apiExceptionObject, badRequest);
+    }
+
+    @ExceptionHandler(value = {UsernameNotFoundException.class})
+    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException e) {
+        HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                unauthorized,
+                ZonedDateTime.now()
+        );
+        return new ResponseEntity<>(apiExceptionObject, unauthorized);
     }
 }
