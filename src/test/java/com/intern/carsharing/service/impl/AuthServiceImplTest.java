@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
@@ -24,6 +25,8 @@ class AuthServiceImplTest {
     private UserService userService;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void register_validData_ok() {
@@ -48,6 +51,8 @@ class AuthServiceImplTest {
         user.setRoles(Set.of(new Role(1L, Role.RoleName.valueOf("ADMIN"))));
         user.setStatus(new Status(1L, Status.StatusType.valueOf("ENABLE")));
         Mockito.when(userMapper.toModel(requestUserDto)).thenReturn(user);
+        Mockito.when(passwordEncoder.encode("password"))
+                .thenReturn("$2a$10$hTlj76.onzhNMv/sh64KZ.NQl30XxR7lhbOIeAeP8hO7d6UTJyo/C");
 
         User userAfterSave = new User();
         userAfterSave.setId(1L);
