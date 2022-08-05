@@ -1,5 +1,6 @@
 package com.intern.carsharing.model;
 
+import com.intern.carsharing.model.util.RoleName;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,13 +10,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Setter
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "roles")
@@ -26,10 +25,4 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(name = "role_name")
     private RoleName roleName;
-
-    public enum RoleName {
-        ADMIN,
-        USER,
-        CAR_OWNER
-    }
 }

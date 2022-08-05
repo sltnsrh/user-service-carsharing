@@ -1,5 +1,6 @@
 package com.intern.carsharing.model;
 
+import com.intern.carsharing.model.util.StatusType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,13 +10,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "statuses")
@@ -26,8 +25,4 @@ public class Status {
     @Enumerated(EnumType.STRING)
     @Column(name = "status_type")
     private StatusType statusType;
-
-    public enum StatusType {
-        ENABLE, DISABLE
-    }
 }

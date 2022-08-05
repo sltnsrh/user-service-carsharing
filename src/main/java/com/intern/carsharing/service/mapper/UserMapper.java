@@ -1,7 +1,8 @@
 package com.intern.carsharing.service.mapper;
 
 import com.intern.carsharing.model.Role;
-import com.intern.carsharing.model.Status;
+import com.intern.carsharing.model.util.RoleName;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
@@ -26,10 +27,10 @@ public class UserMapper implements RequestDtoMapper<User, RegistrationRequestUse
     public User toModel(RegistrationRequestUserDto dto) {
         User user = mapper.map(dto, User.class);
         Set<Role> roles = dto.getRoles().stream()
-                .map(role -> roleService.findByName(Role.RoleName.valueOf(role)))
+                .map(role -> roleService.findByName(RoleName.valueOf(role)))
                 .collect(Collectors.toSet());
         user.setRoles(roles);
-        user.setStatus(statusService.findByStatusType(Status.StatusType.valueOf(STATUS_ENABLE)));
+        user.setStatus(statusService.findByStatusType(StatusType.valueOf(STATUS_ENABLE)));
         return user;
     }
 

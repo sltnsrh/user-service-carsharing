@@ -1,6 +1,7 @@
 package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.model.Status;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.service.StatusService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ public class StatusServiceImpl implements StatusService {
     private final StatusRepository statusRepository;
 
     @Override
-    public Status findByStatusType(Status.StatusType statusType) {
+    public Status findByStatusType(StatusType statusType) {
         return statusRepository.findByStatusType(statusType);
     }
 }
