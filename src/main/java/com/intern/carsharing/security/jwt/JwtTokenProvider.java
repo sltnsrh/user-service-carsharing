@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 @Component
+@Setter
 @RequiredArgsConstructor
 public class JwtTokenProvider {
     private static final int TOKEN_START_INDEX = 7;
@@ -56,7 +58,8 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String token) {
         String email = getUserName(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(userDetails, email, userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(
+                userDetails, email, userDetails.getAuthorities());
     }
 
     public String getUserName(String token) {

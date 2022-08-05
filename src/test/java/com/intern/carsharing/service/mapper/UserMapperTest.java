@@ -5,6 +5,8 @@ import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.util.RoleName;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.RoleService;
 import com.intern.carsharing.service.StatusService;
 import java.util.Collections;
@@ -41,8 +43,8 @@ class UserMapperTest {
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
         requestUserDto.setRoles(Set.of("ADMIN"));
-        Role roleAdmin = new Role(1L, Role.RoleName.ADMIN);
-        Status statusEnable = new Status(1L, Status.StatusType.ENABLE);
+        Role roleAdmin = new Role(1L, RoleName.ADMIN);
+        Status statusEnable = new Status(1L, StatusType.ENABLE);
 
         User userFromModelMapper = new User();
         userFromModelMapper.setEmail("bob@gmail.com");
@@ -51,12 +53,12 @@ class UserMapperTest {
         userFromModelMapper.setLastName("Alister");
         userFromModelMapper.setAge(21);
         userFromModelMapper.setDriverLicence("DFG23K34H");
-        userFromModelMapper.setRoles(Set.of(new Role(1L, Role.RoleName.valueOf("ADMIN"))));
-        userFromModelMapper.setStatus(new Status(1L, Status.StatusType.valueOf("ENABLE")));
+        userFromModelMapper.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
+        userFromModelMapper.setStatus(new Status(1L, StatusType.valueOf("ENABLE")));
 
         Mockito.when(mapper.map(requestUserDto, User.class)).thenReturn(userFromModelMapper);
-        Mockito.when(roleService.findByName(Role.RoleName.valueOf("ADMIN"))).thenReturn(roleAdmin);
-        Mockito.when(statusService.findByStatusType(Status.StatusType.valueOf("ENABLE"))).thenReturn(statusEnable);
+        Mockito.when(roleService.findByName(RoleName.valueOf("ADMIN"))).thenReturn(roleAdmin);
+        Mockito.when(statusService.findByStatusType(StatusType.valueOf("ENABLE"))).thenReturn(statusEnable);
 
         User actual = userMapper.toModel(requestUserDto);
         Assertions.assertNull(actual.getId());
@@ -80,8 +82,8 @@ class UserMapperTest {
         user.setLastName("Alister");
         user.setAge(21);
         user.setDriverLicence("DFG23K34H");
-        user.setRoles(Set.of(new Role(1L, Role.RoleName.valueOf("ADMIN"))));
-        user.setStatus(new Status(1L, Status.StatusType.valueOf("ENABLE")));
+        user.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
+        user.setStatus(new Status(1L, StatusType.valueOf("ENABLE")));
 
         ResponseUserDto responseUserDtoFromMapper = new ResponseUserDto();
         responseUserDtoFromMapper.setId(1L);
@@ -92,9 +94,9 @@ class UserMapperTest {
         responseUserDtoFromMapper.setAge(21);
         responseUserDtoFromMapper.setDriverLicence("DFG23K34H");
         responseUserDtoFromMapper.setRoles((new HashSet<>(Collections
-                .singleton(String.valueOf(new Role(1L, Role.RoleName.ADMIN))))));
+                .singleton(String.valueOf(new Role(1L, RoleName.ADMIN))))));
         responseUserDtoFromMapper.setStatus(String
-                .valueOf(new Status(1L, Status.StatusType.valueOf("ENABLE"))));
+                .valueOf(new Status(1L, StatusType.valueOf("ENABLE"))));
         Mockito.when(mapper.map(user, ResponseUserDto.class)).thenReturn(responseUserDtoFromMapper);
 
         ResponseUserDto actual = userMapper.toDto(user);

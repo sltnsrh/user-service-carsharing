@@ -46,7 +46,8 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameNotFoundException("User with email: " + email + " isn't exist");
         }
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password));
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Wrong password, try again");
         }
