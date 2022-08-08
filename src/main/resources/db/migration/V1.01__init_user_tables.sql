@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS `users_roles`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `roles`;
 DROP TABLE IF EXISTS `statuses`;
 
 CREATE TABLE `statuses` (
@@ -9,8 +12,6 @@ CREATE TABLE `statuses` (
 INSERT INTO `statuses` (id, status_type) VALUES (1, 'ENABLE'),
                                                 (2, 'DISABLE');
 
-DROP TABLE IF EXISTS `roles`;
-
 CREATE TABLE `roles` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
                          `role_name` varchar(255) DEFAULT NULL,
@@ -20,8 +21,6 @@ CREATE TABLE `roles` (
 INSERT INTO `roles` (id, role_name) VALUES (1, 'ADMIN'),
                                            (2, 'USER'),
                                            (3, 'CAR_OWNER');
-
-DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `users` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
@@ -37,8 +36,6 @@ CREATE TABLE `users` (
                          KEY (`status_id`),
                          CONSTRAINT FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`)
 );
-
-DROP TABLE IF EXISTS `users_roles`;
 
 CREATE TABLE `users_roles` (
                                `user_id` bigint NOT NULL,
