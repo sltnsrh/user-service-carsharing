@@ -1,5 +1,6 @@
 package com.intern.carsharing.controller;
 
+import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.service.AuthService;
 import javax.validation.Valid;
@@ -20,5 +21,10 @@ public class AuthenticationController {
             @Valid @RequestBody RegistrationRequestUserDto requestUserDto
     ) {
         return new ResponseEntity<>(authService.register(requestUserDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequestDto requestDto) {
+        return new ResponseEntity<>(authService.login(requestDto), HttpStatus.OK);
     }
 }

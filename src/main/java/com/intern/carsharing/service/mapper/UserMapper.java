@@ -1,11 +1,11 @@
 package com.intern.carsharing.service.mapper;
 
 import com.intern.carsharing.model.Role;
-import com.intern.carsharing.model.util.RoleName;
-import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.util.RoleName;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.RoleService;
 import com.intern.carsharing.service.StatusService;
 import java.util.Set;
