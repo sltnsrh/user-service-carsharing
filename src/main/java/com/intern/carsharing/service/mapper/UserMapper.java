@@ -1,6 +1,7 @@
 package com.intern.carsharing.service.mapper;
 
 import com.intern.carsharing.model.Role;
+import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
@@ -10,38 +11,44 @@ import com.intern.carsharing.service.RoleService;
 import com.intern.carsharing.service.StatusService;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-@RequiredArgsConstructor
-public class UserMapper implements RequestDtoMapper<User, RegistrationRequestUserDto>,
-        ResponseDtoMapper<User, ResponseUserDto> {
+@Mapper(componentModel = "spring")
+public abstract class UserMapper {
     private static final String STATUS_ENABLE = "ENABLE";
-    private final ModelMapper mapper;
-    private final StatusService statusService;
-    private final RoleService roleService;
+    @Autowired
+    protected RoleService roleService;
+    @Autowired
+    protected StatusService statusService;
 
-    @Override
-    public User toModel(RegistrationRequestUserDto dto) {
-        User user = mapper.map(dto, User.class);
-        Set<Role> roles = dto.getRoles().stream()
-                .map(role -> roleService.findByName(RoleName.valueOf(role)))
-                .collect(Collectors.toSet());
-        user.setRoles(roles);
+    @AfterMapping
+    protected void addStatusEnable(@MappingTarget User user) {
         user.setStatus(statusService.findByStatusType(StatusType.valueOf(STATUS_ENABLE)));
-        return user;
     }
 
-    @Override
-    public ResponseUserDto toDto(User model) {
-        ResponseUserDto responseUserDto = mapper.map(model, ResponseUserDto.class);
-        Set<String> roles = model.getRoles().stream()
-                .map(r -> r.getRoleName().name())
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    public abstract User toModel(RegistrationRequestUserDto dto);
+
+    public abstract ResponseUserDto toDto(User user);
+
+    public Set<Role> toRoles(Set<String> stringSet) {
+        return stringSet.stream()
+                .map(role -> roleService.findByName(RoleName.valueOf(role)))
                 .collect(Collectors.toSet());
-        responseUserDto.setRoles(roles);
-        responseUserDto.setStatus(model.getStatus().getStatusType().name());
-        return responseUserDto;
+    }
+
+    public Set<String> toStrings(Set<Role> roles) {
+        return roles.stream()
+                .map(role -> role.getRoleName().name())
+                .collect(Collectors.toSet());
+    }
+
+    public String toStringStatus(Status status) {
+        return status.getStatusType().name();
     }
 }
