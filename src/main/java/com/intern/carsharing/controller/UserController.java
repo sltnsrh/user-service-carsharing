@@ -2,8 +2,6 @@ package com.intern.carsharing.controller;
 
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserInfo(
-            @Valid @PathVariable("id") @Pattern(regexp = "\\d+") Long id
+            @PathVariable("id") Long id
     ) {
         return new ResponseEntity<>(userMapper.toDto(userService.get(id)), HttpStatus.OK);
     }
