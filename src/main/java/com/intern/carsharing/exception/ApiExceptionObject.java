@@ -1,13 +1,15 @@
 package com.intern.carsharing.exception;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-@Getter
-@RequiredArgsConstructor
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApiExceptionObject {
-    private final String message;
-    private final HttpStatus httpStatus;
-    private final String timestamp;
+    private String message;
+    private HttpStatus httpStatus;
+    private String timestamp;
 }
