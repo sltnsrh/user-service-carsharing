@@ -19,7 +19,7 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
                 conflict,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, conflict);
     }
@@ -33,7 +33,7 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 errorMessages,
                 badRequest,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, badRequest);
     }
@@ -44,7 +44,7 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
                 unauthorized,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, unauthorized);
     }
@@ -55,7 +55,7 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
                 notFound,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, notFound);
     }

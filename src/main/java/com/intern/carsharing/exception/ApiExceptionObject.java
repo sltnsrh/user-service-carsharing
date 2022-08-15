@@ -1,6 +1,5 @@
 package com.intern.carsharing.exception;
 
-import java.time.ZonedDateTime;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,5 +9,5 @@ import org.springframework.http.HttpStatus;
 public class ApiExceptionObject {
     private final String message;
     private final HttpStatus httpStatus;
-    private final ZonedDateTime timestamp;
+    private final String timestamp;
 }
