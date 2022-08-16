@@ -39,7 +39,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
         String newEmail = updateDto.getEmail();
         if (findByEmail(newEmail) != null && !Objects.equals(newEmail, user.getEmail())) {
-            throw new UserAlreadyExistException("User with email " + newEmail + " is already exist");
+            throw new UserAlreadyExistException("User with email " + newEmail
+                    + " is already exist");
         }
         user.setEmail(newEmail);
         user.setFirstName(updateDto.getFirstName());

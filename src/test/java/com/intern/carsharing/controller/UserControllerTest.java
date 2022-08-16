@@ -1,5 +1,10 @@
 package com.intern.carsharing.controller;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.Role;
@@ -9,25 +14,21 @@ import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
-import org.mockito.Mockito;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import com.intern.carsharing.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -65,9 +66,12 @@ class UserControllerTest {
 
     @Test
     void getUserInfoWithExistUserId() throws Exception {
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail())).thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider.createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
         MvcResult mvcResult = mockMvc.perform(get("/users/{id}", 1)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isOk())
@@ -97,7 +101,8 @@ class UserControllerTest {
     @Test
     void userUpdateWithValidDataAndToken() throws Exception {
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail())).thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
 
         RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
         userUpdateDto.setEmail("newbob@gmail.com");
@@ -107,8 +112,10 @@ class UserControllerTest {
         userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
 
         userFromDb.setEmail(userUpdateDto.getEmail());
-        Mockito.when(userRepository.save(userFromDb)).thenReturn(userFromDb);
-        String jwt = jwtTokenProvider.createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
+        Mockito.when(userRepository.save(userFromDb))
+                .thenReturn(userFromDb);
+        String jwt = jwtTokenProvider
+                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
         MvcResult mvcResult = mockMvc.perform(put("/users/update/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
@@ -131,9 +138,12 @@ class UserControllerTest {
         userUpdateDto.setAge(userFromDb.getAge());
         userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
 
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail())).thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider.createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.empty());
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
 
         mockMvc.perform(put("/users/update/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -151,10 +161,16 @@ class UserControllerTest {
         userUpdateDto.setAge(userFromDb.getAge());
         userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
 
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail())).thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userUpdateDto.getEmail())).thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider.createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository
+                .findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository
+                .findUserByEmail(userUpdateDto.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
 
         mockMvc.perform(put("/users/update/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)

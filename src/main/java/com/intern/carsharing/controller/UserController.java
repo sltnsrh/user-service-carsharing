@@ -32,7 +32,7 @@ public class UserController {
     public ResponseEntity<Object> update(
             @PathVariable("id") Long id,
             @Valid @RequestBody RequestUserUpdateDto requestDto
-            ) {
+    ) {
         return new ResponseEntity<>(
                 userMapper.toDto((userService.update(id, requestDto))),
                 HttpStatus.OK
