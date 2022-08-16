@@ -42,11 +42,15 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistException("User with email " + newEmail
                     + " is already exist");
         }
-        user.setEmail(newEmail);
+        setUpdates(user, updateDto);
+        return userRepository.save(user);
+    }
+
+    private void setUpdates(User user, RequestUserUpdateDto updateDto) {
+        user.setEmail(updateDto.getEmail());
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());
         user.setAge(updateDto.getAge());
         user.setDriverLicence(updateDto.getDriverLicence());
-        return userRepository.save(user);
     }
 }
