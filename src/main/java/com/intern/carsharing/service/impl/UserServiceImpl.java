@@ -8,7 +8,6 @@ import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.UserService;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
