@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         String newEmail = updateDto.getEmail();
         if (findByEmail(newEmail) != null && !Objects.equals(newEmail, user.getEmail())) {
             throw new UserAlreadyExistException("User with email " + newEmail
-                    + " is already exist");
+                    + " already exists");
         }
         setUpdates(user, updateDto);
         return userRepository.save(user);

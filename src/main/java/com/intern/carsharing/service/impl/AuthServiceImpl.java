@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
     public ResponseUserDto register(RegistrationRequestUserDto requestUserDto) {
         String email = requestUserDto.getEmail();
         if (userExist(email)) {
-            throw new UserAlreadyExistException("User with email " + email + " is already exist");
+            throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
         User user = userMapper.toModel(requestUserDto);
         user.setPassword(encoder.encode(user.getPassword()));
@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String email = requestDto.getEmail();
         if (!userExist(email)) {
-            throw new UsernameNotFoundException("User with email: " + email + " isn't exist");
+            throw new UsernameNotFoundException("User with email: " + email + " doesn't exist");
         }
         String password = requestDto.getPassword();
         try {
