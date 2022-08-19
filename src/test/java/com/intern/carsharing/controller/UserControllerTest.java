@@ -85,6 +85,20 @@ class UserControllerTest {
     }
 
     @Test
+    void getUserInfoWithExpiredToken() throws Exception {
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String expiredJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2IxQGdtYWlsLmNvbSIsInJvbGVz"
+                + "IjpbIlVTRVIiXSwiaWF0IjoxNjYwODQ3NTMzLCJleHAiOjE2NjA4NDc4OTN9"
+                + ".UH-NgeTcF9dFfdVv_GrSmUtjzfN__mgPIS4a3SUsPZk";
+        mockMvc.perform(get("/users/{id}", 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredJwt))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void getUserInfoWithInvalidToken() throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + "invalid_token"))
@@ -96,6 +110,13 @@ class UserControllerTest {
                 .readValue(actualResponseBody, ApiExceptionObject.class);
         Assertions.assertEquals(apiExceptionObject.getMessage(), "Jwt token not valid or expired");
         Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void getUserInfoWithEmptyToken() throws Exception {
+        mockMvc.perform(get("/users/{id}", 1)
+                        .header(HttpHeaders.AUTHORIZATION, ""))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -161,6 +182,10 @@ class UserControllerTest {
         userUpdateDto.setAge(userFromDb.getAge());
         userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
 
+        User anotherUserWithSameEmail = new User();
+        anotherUserWithSameEmail.setId(2L);
+        anotherUserWithSameEmail.setEmail("newbob@gmail.com");
+
         Mockito.when(userRepository.findById(1L))
                 .thenReturn(Optional.of(userFromDb));
         Mockito.when(userRepository
@@ -168,7 +193,7 @@ class UserControllerTest {
                 .thenReturn(Optional.of(userFromDb));
         Mockito.when(userRepository
                 .findUserByEmail(userUpdateDto.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
+                .thenReturn(Optional.of(anotherUserWithSameEmail));
         String jwt = jwtTokenProvider
                 .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
 

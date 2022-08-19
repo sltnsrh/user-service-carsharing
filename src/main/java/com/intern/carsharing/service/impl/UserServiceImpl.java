@@ -6,7 +6,6 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.UserService;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +34,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User update(Long id, RequestUserUpdateDto updateDto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
+        User user = get(id);
         String newEmail = updateDto.getEmail();
-        if (findByEmail(newEmail) != null && !Objects.equals(newEmail, user.getEmail())) {
+        User userWithSameNewEmail = findByEmail(newEmail);
+        if (userWithSameNewEmail != null && !userWithSameNewEmail.getId().equals(id)) {
             throw new UserAlreadyExistException("User with email " + newEmail
                     + " already exists");
         }

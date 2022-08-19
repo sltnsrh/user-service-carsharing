@@ -15,11 +15,13 @@ public class RequestUserUpdateDto {
     private String email;
     @ApiModelProperty(example = "Bob")
     @NotEmpty(message = "First name field can't be empty")
-    @Size(min = 3, message = "The length of the first name must be at least 3 characters")
+    @Size(min = 3, max = 50,
+            message = "The length of the first name must be at least 3 characters, max 50")
     private String firstName;
     @ApiModelProperty(example = "Alister")
     @NotEmpty(message = "Last name field can't be empty")
-    @Size(min = 3, message = "The length of the last name must be at least 3 characters")
+    @Size(min = 3, max = 50,
+            message = "The length of the last name must be at least 3 characters, max 50")
     private String lastName;
     @ApiModelProperty(example = "21")
     @NotNull(message = "Age field can't be null")
