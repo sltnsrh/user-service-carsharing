@@ -61,7 +61,6 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
 
         ResponseUserDto responseUserDto = new ResponseUserDto();
         responseUserDto.setId(1L);
@@ -109,7 +108,6 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
 
         MvcResult mvcResult = mockMvc.perform(post("/registration")
                         .contentType("application/json")
@@ -130,7 +128,6 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
 
         Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
                 .thenReturn(Optional.of(new User()));
@@ -155,7 +152,6 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(20);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
 
         MvcResult mvcResult = mockMvc.perform(post("/registration")
                         .contentType("application/json")

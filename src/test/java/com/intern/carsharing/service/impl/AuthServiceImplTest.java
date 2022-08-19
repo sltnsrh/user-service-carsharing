@@ -49,7 +49,6 @@ class AuthServiceImplTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(null);
 
         User user = new User();

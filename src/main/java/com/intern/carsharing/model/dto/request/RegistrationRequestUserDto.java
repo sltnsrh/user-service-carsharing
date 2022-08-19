@@ -3,7 +3,6 @@ package com.intern.carsharing.model.dto.request;
 import com.intern.carsharing.lib.FieldsValueMatch;
 import com.intern.carsharing.lib.ValidEmail;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Set;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -46,7 +45,4 @@ public class RegistrationRequestUserDto {
     @NotEmpty(message = "Driver licence field can't be empty")
     @Size(min = 9, max = 9, message = "The driver's license number must contain 9 characters")
     private String driverLicence;
-    @ApiModelProperty(notes = "ADMIN, USER, CAR_OWNER", example = "[\"USER\"]", required = true)
-    @NotNull(message = "Roles field can't be empty")
-    private Set<String> roles;
 }

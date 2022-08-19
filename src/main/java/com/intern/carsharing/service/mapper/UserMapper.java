@@ -9,6 +9,7 @@ import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.RoleService;
 import com.intern.carsharing.service.StatusService;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.mapstruct.AfterMapping;
@@ -28,19 +29,17 @@ public abstract class UserMapper {
     @AfterMapping
     protected void addStatusEnable(@MappingTarget User user) {
         user.setStatus(statusService.findByStatusType(StatusType.valueOf(STATUS_ENABLE)));
+        Set<Role> roles = new HashSet<>();
+        roles.add(roleService.findByName(RoleName.USER));
+        user.setRoles(roles);
     }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     public abstract User toModel(RegistrationRequestUserDto dto);
 
     public abstract ResponseUserDto toDto(User user);
-
-    public Set<Role> toRoles(Set<String> stringSet) {
-        return stringSet.stream()
-                .map(role -> roleService.findByName(RoleName.valueOf(role)))
-                .collect(Collectors.toSet());
-    }
 
     public Set<String> toStrings(Set<Role> roles) {
         return roles.stream()
