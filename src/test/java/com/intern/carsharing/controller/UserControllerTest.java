@@ -137,7 +137,7 @@ class UserControllerTest {
                 .thenReturn(userFromDb);
         String jwt = jwtTokenProvider
                 .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
-        MvcResult mvcResult = mockMvc.perform(put("/users/update/{id}", 1)
+        MvcResult mvcResult = mockMvc.perform(put("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userUpdateDto)))
@@ -197,7 +197,7 @@ class UserControllerTest {
         String jwt = jwtTokenProvider
                 .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
 
-        mockMvc.perform(put("/users/update/{id}", 1)
+        mockMvc.perform(put("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userUpdateDto)))
