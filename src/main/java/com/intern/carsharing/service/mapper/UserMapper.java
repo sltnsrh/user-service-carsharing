@@ -1,54 +1,22 @@
 package com.intern.carsharing.service.mapper;
 
-import com.intern.carsharing.model.Role;
-import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
-import com.intern.carsharing.model.util.RoleName;
-import com.intern.carsharing.model.util.StatusType;
-import com.intern.carsharing.service.RoleService;
-import com.intern.carsharing.service.StatusService;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.mapstruct.AfterMapping;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapperUtil.class})
+@RequiredArgsConstructor
 public abstract class UserMapper {
-    private static final String STATUS_ENABLE = "ENABLE";
-    @Autowired
-    protected RoleService roleService;
-    @Autowired
-    protected StatusService statusService;
-
-    @AfterMapping
-    protected void addStatusEnable(@MappingTarget User user) {
-        user.setStatus(statusService.findByStatusType(StatusType.valueOf(STATUS_ENABLE)));
-    }
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "setUserRole")
+    @Mapping(source = "status", target = "status", qualifiedByName = "setStatusActive")
     public abstract User toModel(RegistrationRequestUserDto dto);
 
+    @Mapping(source = "roles", target = "roles", qualifiedByName = "rolesToSetString")
+    @Mapping(source = "status", target = "status", qualifiedByName = "statusToString")
     public abstract ResponseUserDto toDto(User user);
-
-    public Set<Role> toRoles(Set<String> stringSet) {
-        return stringSet.stream()
-                .map(role -> roleService.findByName(RoleName.valueOf(role)))
-                .collect(Collectors.toSet());
-    }
-
-    public Set<String> toStrings(Set<Role> roles) {
-        return roles.stream()
-                .map(role -> role.getRoleName().name())
-                .collect(Collectors.toSet());
-    }
-
-    public String toStringStatus(Status status) {
-        return status.getStatusType().name();
-    }
 }
