@@ -19,7 +19,7 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
                 conflict,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, conflict);
     }
@@ -33,19 +33,30 @@ public class ApiExceptionHandler {
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 errorMessages,
                 badRequest,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, badRequest);
     }
 
     @ExceptionHandler(value = {UsernameNotFoundException.class})
-    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException e) {
+    public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException e) {
         HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
                 unauthorized,
-                ZonedDateTime.now()
+                ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, unauthorized);
+    }
+
+    @ExceptionHandler(value = {UserNotFoundException.class})
+    public ResponseEntity<Object> handleUserNorFoundException(UserNotFoundException e) {
+        HttpStatus notFound = HttpStatus.NOT_FOUND;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                notFound,
+                ZonedDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, notFound);
     }
 }

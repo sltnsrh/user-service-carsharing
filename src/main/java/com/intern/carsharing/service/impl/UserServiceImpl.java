@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.UserService;
@@ -23,6 +24,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
     }
 }
