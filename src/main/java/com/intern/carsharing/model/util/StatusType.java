@@ -1,6 +1,6 @@
 package com.intern.carsharing.model.util;
 
 public enum StatusType {
-    ENABLE,
-    DISABLE
+    ACTIVE,
+    BLOCKED
 }

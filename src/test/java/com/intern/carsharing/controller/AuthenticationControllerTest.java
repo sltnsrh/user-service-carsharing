@@ -71,7 +71,7 @@ class AuthenticationControllerTest {
         responseUserDto.setAge(21);
         responseUserDto.setDriverLicence("DFG23K34H");
         responseUserDto.setRoles(Set.of("ADMIN"));
-        responseUserDto.setStatus("ENABLE");
+        responseUserDto.setStatus("ACTIVE");
 
         User user = new User();
         user.setId(1L);
@@ -82,7 +82,7 @@ class AuthenticationControllerTest {
         user.setAge(21);
         user.setDriverLicence("DFG23K34H");
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
-        user.setStatus(new Status(1L, StatusType.ENABLE));
+        user.setStatus(new Status(1L, StatusType.ACTIVE));
 
         Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
                 .thenReturn(Optional.empty());
@@ -178,7 +178,7 @@ class AuthenticationControllerTest {
         userFromDb.setAge(21);
         userFromDb.setDriverLicence("234WER234");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        userFromDb.setStatus(new Status(1L, StatusType.ENABLE));
+        userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
 
         Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
                 .thenReturn(Optional.of(userFromDb));
@@ -212,7 +212,7 @@ class AuthenticationControllerTest {
         userFromDb.setAge(21);
         userFromDb.setDriverLicence("234WER234");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        userFromDb.setStatus(new Status(1L, StatusType.ENABLE));
+        userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
 
         Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
                 .thenReturn(Optional.of(userFromDb));

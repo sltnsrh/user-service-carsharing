@@ -61,7 +61,7 @@ class UserControllerTest {
         userFromDb.setAge(21);
         userFromDb.setDriverLicence("DFG23K34H");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.USER)));
-        userFromDb.setStatus(new Status(1L, StatusType.ENABLE));
+        userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
     }
 
     @Test
