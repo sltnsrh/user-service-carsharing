@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `users_roles`;
+DROP TABLE IF EXISTS `confirmation_tokens`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `roles`;
 DROP TABLE IF EXISTS `statuses`;
@@ -10,7 +11,8 @@ CREATE TABLE `statuses` (
 );
 
 INSERT INTO `statuses` (id, status_type) VALUES (1, 'ACTIVE'),
-                                                (2, 'BLOCKED');
+                                                (2, 'BLOCKED'),
+                                                (3, 'INVALIDATE');
 
 CREATE TABLE `roles` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
@@ -35,6 +37,18 @@ CREATE TABLE `users` (
                          UNIQUE KEY (`email`),
                          KEY (`status_id`),
                          CONSTRAINT FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`)
+);
+
+CREATE TABLE `confirmation_tokens` (
+                                       `id` bigint NOT NULL AUTO_INCREMENT,
+                                       `confirmed_at` datetime(6) DEFAULT NULL,
+                                       `created_at` datetime(6) NOT NULL,
+                                       `expired_at` datetime(6) NOT NULL,
+                                       `token` varchar(255) NOT NULL,
+                                       `user_id` bigint NOT NULL,
+                                       PRIMARY KEY (`id`),
+                                       KEY (`user_id`),
+                                       CONSTRAINT FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE `users_roles` (
