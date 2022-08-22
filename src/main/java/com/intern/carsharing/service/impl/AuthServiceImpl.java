@@ -22,10 +22,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserService userService;
-    private final UserMapper mapper;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder encoder;
+    private final UserMapper userMapper;
 
     @Override
     public ResponseUserDto register(RegistrationRequestUserDto requestUserDto) {
@@ -33,18 +33,18 @@ public class AuthServiceImpl implements AuthService {
         if (userExist(email)) {
             throw new UserAlreadyExistException("User with email " + email + " is already exist");
         }
-        User user = mapper.toModel(requestUserDto);
+        User user = userMapper.toModel(requestUserDto);
         user.setPassword(encoder.encode(user.getPassword()));
-        return mapper.toDto(userService.save(user));
+        return userMapper.toDto(userService.save(user));
     }
 
     @Override
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String email = requestDto.getEmail();
-        String password = requestDto.getPassword();
         if (!userExist(email)) {
             throw new UsernameNotFoundException("User with email: " + email + " isn't exist");
         }
+        String password = requestDto.getPassword();
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password));
