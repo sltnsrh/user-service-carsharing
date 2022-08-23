@@ -3,7 +3,6 @@ package com.intern.carsharing.controller;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -66,11 +65,33 @@ public class AuthenticationController {
         return new ResponseEntity<>(authService.login(requestDto), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "User email confirmation",
+            description = "Allows to confirm user email. "
+                    + "As response user gets message that confirmation email was sent.",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping("/confirm")
     public ResponseEntity<Object> confirm(@RequestParam String token) {
         return new ResponseEntity<>(authService.confirm(token), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "User email confirmation resend",
+            description = "Allows to resend a confirmation email to a user. "
+                    + "As response user gets message that confirmation email was sent.",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping("/resend")
     public ResponseEntity<Object> resend(@RequestParam String email) {
         return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);

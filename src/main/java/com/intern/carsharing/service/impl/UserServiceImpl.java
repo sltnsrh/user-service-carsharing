@@ -52,8 +52,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User changeStatus(User user, StatusType statusType) {
         user.setStatus(statusService.findByStatusType(statusType));
-        save(user);
-        return user;
+        return save(user);
     }
 
     private void setUpdates(User user, RequestUserUpdateDto updateDto) {
