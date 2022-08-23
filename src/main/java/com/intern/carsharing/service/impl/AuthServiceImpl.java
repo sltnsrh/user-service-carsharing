@@ -41,23 +41,26 @@ public class AuthServiceImpl implements AuthService {
         }
         user = getUserFromDtoWithEncodedPassword(requestUserDto);
         ConfirmationToken confirmationToken = confirmationTokenService.create(user);
-        return createResponseMessage(confirmationToken.getToken());
+        return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
     @Override
     public LoginResponseDto login(LoginRequestDto requestDto) {
-        String email = requestDto.getEmail();
-        if (!userExist(email)) {
-            throw new UsernameNotFoundException("User with email: " + email + " doesn't exist");
+        User user = userService.findByEmail(requestDto.getEmail());
+        if (user == null) {
+            throw new UsernameNotFoundException(
+                    "User with email: " + requestDto.getEmail() + " doesn't exist"
+            );
         }
+        String email = user.getEmail();
         String password = requestDto.getPassword();
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password));
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Wrong password, try again");
         }
-        User user = userService.findByEmail(email);
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         return new LoginResponseDto(email, jwtToken);
     }
@@ -94,15 +97,10 @@ public class AuthServiceImpl implements AuthService {
             );
         }
         ConfirmationToken confirmationToken = confirmationTokenService.create(user);
-        return createResponseMessage(confirmationToken.getToken());
+        return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
-    private boolean userExist(String email) {
-        User user = userService.findByEmail(email);
-        return user != null;
-    }
-
-    private String createResponseMessage(String token) {
+    private String getRegistrationResponseMessage(String token) {
         return "Thanks for the registration!"
                 + System.lineSeparator()
                 + "The confirmation mail was sent on your email. "
