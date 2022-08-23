@@ -65,4 +65,16 @@ public class ApiExceptionHandler {
         );
         return new ResponseEntity<>(apiExceptionObject, notFound);
     }
+
+    @ExceptionHandler(value = {ConfirmationTokenInvalidException.class})
+    public ResponseEntity<ApiExceptionObject> handleConfirmationTokenInvalidException(
+            ConfirmationTokenInvalidException e) {
+        HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                unauthorized,
+                ZonedDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, unauthorized);
+    }
 }
