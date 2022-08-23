@@ -12,7 +12,6 @@ import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.ConfirmationTokenService;
-import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
@@ -33,21 +32,15 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder encoder;
     private final UserMapper userMapper;
     private final ConfirmationTokenService confirmationTokenService;
-    private final StatusService statusService;
 
     @Override
     public String register(RegistrationRequestUserDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
         if (user != null) {
-            if (!user.getStatus()
-                    .equals(statusService.findByStatusType(StatusType.INVALIDATE))) {
-                throw new UserAlreadyExistException("User with email " + email + " already exists");
-            }
-            setUserUpdatesAndSave(user, requestUserDto);
-        } else {
-            user = getUserFromDtoWithEncodedPassword(requestUserDto);
+            throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
+        user = getUserFromDtoWithEncodedPassword(requestUserDto);
         ConfirmationToken confirmationToken = confirmationTokenService.create(user);
         return createResponseMessage(confirmationToken.getToken());
     }
@@ -93,9 +86,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String createResponseMessage(String token) {
-        return "Thanks for the registration!" + System.lineSeparator()
-                + "Confirm your email to activate your account." + System.lineSeparator()
+        return "Thanks for the registration!"
                 + System.lineSeparator()
+                + "The confirmation mail was sent on your email. "
+                + System.lineSeparator()
+                + "Please, confirm your email address to activate your account."
+                + System.lineSeparator().repeat(2)
                 + "localhost:8080/confirm?token=" + token;
     }
 
@@ -103,14 +99,5 @@ public class AuthServiceImpl implements AuthService {
         User user = userMapper.toModel(dto);
         user.setPassword(encoder.encode(user.getPassword()));
         return userService.save(user);
-    }
-
-    private void setUserUpdatesAndSave(User user, RegistrationRequestUserDto dto) {
-        user.setPassword(encoder.encode(dto.getPassword()));
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setAge(dto.getAge());
-        user.setDriverLicence(dto.getDriverLicence());
-        userService.save(user);
     }
 }
