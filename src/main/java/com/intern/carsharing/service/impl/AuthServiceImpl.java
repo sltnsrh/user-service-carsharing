@@ -1,13 +1,14 @@
 package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.exception.UserAlreadyExistException;
+import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
+import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +27,19 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder encoder;
     private final UserMapper userMapper;
+    private final ConfirmationTokenService confirmationTokenService;
 
     @Override
-    public ResponseUserDto register(RegistrationRequestUserDto requestUserDto) {
+    public String register(RegistrationRequestUserDto requestUserDto) {
         String email = requestUserDto.getEmail();
         if (userExist(email)) {
             throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
         User user = userMapper.toModel(requestUserDto);
         user.setPassword(encoder.encode(user.getPassword()));
-        return userMapper.toDto(userService.save(user));
+        ConfirmationToken confirmationToken = confirmationTokenService
+                .create(userService.save(user));
+        return createResponseMessage(confirmationToken.getToken());
     }
 
     @Override
@@ -59,5 +63,12 @@ public class AuthServiceImpl implements AuthService {
     private boolean userExist(String email) {
         User user = userService.findByEmail(email);
         return user != null;
+    }
+
+    private String createResponseMessage(String token) {
+        return "Thanks for the registration!" + System.lineSeparator()
+                + "Confirm your email to activate your account." + System.lineSeparator()
+                + System.lineSeparator()
+                + "localhost:8080/confirm?token=" + token;
     }
 }

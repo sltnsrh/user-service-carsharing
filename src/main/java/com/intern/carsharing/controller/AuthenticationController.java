@@ -3,7 +3,6 @@ package com.intern.carsharing.controller;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,22 +27,17 @@ public class AuthenticationController {
     @Operation(
             summary = "Registration a new user",
             description = "Allows to register a new user. "
-                    + "As response user gets a user info with a unique Id.",
+                    + "As response user gets a message with confirmation email url.",
             tags = {"Authentication"},
             responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "Created",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
-                    ),
+                    @ApiResponse(responseCode = "201", description = "Created"),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "409", description = "Conflict")
             }
     )
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
-    public ResponseEntity<ResponseUserDto> register(
+    public ResponseEntity<Object> register(
             @Valid @RequestBody RegistrationRequestUserDto requestUserDto
     ) {
         return new ResponseEntity<>(authService.register(requestUserDto), HttpStatus.CREATED);
