@@ -3,6 +3,7 @@ package com.intern.carsharing.controller;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,8 +14,10 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,5 +64,10 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto requestDto) {
         return new ResponseEntity<>(authService.login(requestDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<ResponseUserDto> confirm(@RequestParam String token) {
+        return new ResponseEntity<>(authService.confirm(token), HttpStatus.OK);
     }
 }
