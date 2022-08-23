@@ -7,4 +7,6 @@ public interface ConfirmationTokenService {
     ConfirmationToken create(User user);
 
     ConfirmationToken findByToken(String token);
+
+    void setConfirmDate(ConfirmationToken confirmationToken);
 }

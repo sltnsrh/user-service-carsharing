@@ -31,4 +31,10 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
     public ConfirmationToken findByToken(String token) {
         return confirmationTokenRepository.findByToken(token).orElse(null);
     }
+
+    @Override
+    public void setConfirmDate(ConfirmationToken confirmationToken) {
+        confirmationToken.setConfirmedAt(LocalDateTime.now());
+        confirmationTokenRepository.save(confirmationToken);
+    }
 }
