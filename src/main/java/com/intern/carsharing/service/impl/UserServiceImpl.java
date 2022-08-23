@@ -4,7 +4,9 @@ import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
+import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final StatusService statusService;
 
     @Override
     public User findByEmail(String email) {
@@ -43,6 +46,14 @@ public class UserServiceImpl implements UserService {
         }
         setUpdates(user, updateDto);
         return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User changeStatus(User user, StatusType statusType) {
+        user.setStatus(statusService.findByStatusType(statusType));
+        save(user);
+        return user;
     }
 
     private void setUpdates(User user, RequestUserUpdateDto updateDto) {
