@@ -1,16 +1,20 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -58,6 +62,23 @@ public class AuthServiceImpl implements AuthService {
         User user = userService.findByEmail(email);
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         return new LoginResponseDto(email, jwtToken);
+    }
+
+    @Override
+    public ResponseUserDto confirm(String token) {
+        ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
+        if (confirmationToken == null) {
+            throw new ConfirmationTokenInvalidException("Confirmation token doesn't exist.");
+        }
+        if (confirmationToken.getConfirmedAt() != null) {
+            throw new ConfirmationTokenInvalidException("Token was already confirmed.");
+        }
+        if (confirmationToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new ConfirmationTokenInvalidException("Confirmation token was expired.");
+        }
+        User user = confirmationToken.getUser();
+        userService.changeStatus(user, StatusType.ACTIVE);
+        return userMapper.toDto(user);
     }
 
     private boolean userExist(String email) {
