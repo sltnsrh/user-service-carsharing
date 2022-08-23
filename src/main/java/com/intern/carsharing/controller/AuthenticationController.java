@@ -67,7 +67,12 @@ public class AuthenticationController {
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<ResponseUserDto> confirm(@RequestParam String token) {
+    public ResponseEntity<Object> confirm(@RequestParam String token) {
         return new ResponseEntity<>(authService.confirm(token), HttpStatus.OK);
+    }
+
+    @GetMapping("/resend")
+    public ResponseEntity<Object> resend(@RequestParam String email) {
+        return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);
     }
 }

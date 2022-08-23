@@ -7,7 +7,6 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
@@ -64,20 +63,38 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseUserDto confirm(String token) {
+    public String confirm(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
         if (confirmationToken == null) {
             throw new ConfirmationTokenInvalidException("Confirmation token doesn't exist.");
         }
+        String email = confirmationToken.getUser().getEmail();
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new ConfirmationTokenInvalidException("Token was already confirmed.");
+            throw new ConfirmationTokenInvalidException(
+                    "Email " + email + " was already confirmed."
+            );
         }
         if (confirmationToken.getExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new ConfirmationTokenInvalidException("Confirmation token was expired.");
+            return getTokenExpiredMessage(email);
         }
         confirmationTokenService.setConfirmDate(confirmationToken);
-        User user = userService.changeStatus(confirmationToken.getUser(), StatusType.ACTIVE);
-        return userMapper.toDto(user);
+        userService.changeStatus(confirmationToken.getUser(), StatusType.ACTIVE);
+        return "Your email address: " + email + " was confirmed successfully!";
+    }
+
+    @Override
+    public String resendEmail(String email) {
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("User with email: " + email + " doesn't exist");
+        }
+        if (!user.getStatus().getStatusType().equals(StatusType.INVALIDATE)) {
+            throw new ConfirmationTokenInvalidException(
+                    "Your email " + email + " was already confirmed."
+            );
+        }
+        ConfirmationToken confirmationToken = confirmationTokenService.create(user);
+        return createResponseMessage(confirmationToken.getToken());
     }
 
     private boolean userExist(String email) {
@@ -99,5 +116,13 @@ public class AuthServiceImpl implements AuthService {
         User user = userMapper.toModel(dto);
         user.setPassword(encoder.encode(user.getPassword()));
         return userService.save(user);
+    }
+
+    private String getTokenExpiredMessage(String email) {
+        return "Confirmation token was expired."
+                + System.lineSeparator()
+                + "Follow the link to get a new verification mail: "
+                + System.lineSeparator()
+                + "localhost:8080/resend?email=" + email;
     }
 }
