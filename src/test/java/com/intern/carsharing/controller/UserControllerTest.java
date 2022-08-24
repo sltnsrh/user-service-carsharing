@@ -85,6 +85,19 @@ class UserControllerTest {
     }
 
     @Test
+    void getUserInfoWithNotExistUserId() throws Exception {
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.empty());
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
+        mockMvc.perform(get("/users/{id}", 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void getUserInfoWithExpiredToken() throws Exception {
         Mockito.when(userRepository.findById(1L))
                 .thenReturn(Optional.of(userFromDb));
@@ -202,5 +215,32 @@ class UserControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userUpdateDto)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void userUpdateWithExistingEmailAndSameId() throws Exception {
+        RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
+        userUpdateDto.setEmail(userFromDb.getEmail());
+        userUpdateDto.setFirstName(userFromDb.getFirstName());
+        userUpdateDto.setLastName(userFromDb.getLastName());
+        userUpdateDto.setAge(userFromDb.getAge());
+        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
+
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository
+                        .findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(userRepository
+                        .findUserByEmail(userUpdateDto.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
+
+        mockMvc.perform(put("/users/{id}", 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk());
     }
 }
