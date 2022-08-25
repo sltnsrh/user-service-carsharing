@@ -17,6 +17,7 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,6 +50,7 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden")
             }
     )
+    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserInfo(
             @Parameter(description = "User id", example = "1")
@@ -74,6 +76,7 @@ public class UserController {
                     @ApiResponse(responseCode = "405", description = "Method Not Allowed"),
                     @ApiResponse(responseCode = "409", description = "Conflict")
             })
+    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> update(
             @Parameter(description = "User id", example = "1")

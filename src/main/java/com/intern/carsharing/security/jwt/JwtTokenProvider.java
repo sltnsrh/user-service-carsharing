@@ -1,6 +1,7 @@
 package com.intern.carsharing.security.jwt;
 
 import com.intern.carsharing.model.Role;
+import com.intern.carsharing.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -21,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Setter
@@ -31,6 +33,7 @@ public class JwtTokenProvider {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_START = "Bearer ";
     private final UserDetailsService userDetailsService;
+    private final UserService userService;
     @Value("${jwt.token.secret}")
     private String secret;
     @Value("${jwt.token.expired}")
@@ -54,11 +57,16 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    @Transactional
     public Authentication getAuthentication(String token) {
         String email = getUserName(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(
-                userDetails, email, userDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails, email, userDetails.getAuthorities()
+                );
+        authenticationToken.setDetails(userService.findByEmail(email));
+        return authenticationToken;
     }
 
     public String getUserName(String token) {
