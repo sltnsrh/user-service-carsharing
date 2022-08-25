@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {UserAlreadyExistException.class})
-    public ResponseEntity<Object> handleUserExistException(UserAlreadyExistException e) {
+    public ResponseEntity<ApiExceptionObject> handleUserExistException(
+            UserAlreadyExistException e
+    ) {
         HttpStatus conflict = HttpStatus.CONFLICT;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
@@ -25,7 +27,9 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
-    public ResponseEntity<Object> handleBadRequestException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiExceptionObject> handleBadRequestException(
+            MethodArgumentNotValidException e
+    ) {
         HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         String errorMessages = e.getBindingResult().getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
@@ -39,7 +43,9 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(value = {UsernameNotFoundException.class})
-    public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException e) {
+    public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
+            UsernameNotFoundException e
+    ) {
         HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
@@ -50,7 +56,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(value = {UserNotFoundException.class})
-    public ResponseEntity<Object> handleUserNorFoundException(UserNotFoundException e) {
+    public ResponseEntity<ApiExceptionObject> handleUserNorFoundException(UserNotFoundException e) {
         HttpStatus notFound = HttpStatus.NOT_FOUND;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
