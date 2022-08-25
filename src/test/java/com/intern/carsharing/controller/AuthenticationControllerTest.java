@@ -284,6 +284,7 @@ class AuthenticationControllerTest {
     @Test
     void confirmEmailWithValidToken() throws Exception {
         User user = new User();
+        user.setId(1L);
         user.setEmail("bob@gmail.com");
         ConfirmationToken confirmationToken = new ConfirmationToken();
         confirmationToken.setUser(user);
@@ -294,6 +295,7 @@ class AuthenticationControllerTest {
         Mockito.when(confirmationTokenRepository.findByToken("confirmationtoken"))
                 .thenReturn(Optional.of(confirmationToken));
         Mockito.when(confirmationTokenRepository.save(any())).thenReturn(null);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(statusRepository.findByStatusType(StatusType.ACTIVE))
                 .thenReturn(new Status(1L, StatusType.ACTIVE));
         Mockito.when(userRepository.save(any(User.class))).thenReturn(null);

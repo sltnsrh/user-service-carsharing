@@ -1,6 +1,5 @@
 package com.intern.carsharing.controller;
 
-import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
@@ -111,9 +110,8 @@ public class UserController {
             @Valid @RequestBody ChangeStatusRequestDto requestDto
     ) {
         StatusType statusType = StatusType.valueOf(requestDto.getStatus().toUpperCase());
-        User user = userService.get(id);
         return new ResponseEntity<>(
-                userMapper.toDto(userService.changeStatus(user, statusType)),
+                userMapper.toDto(userService.changeStatus(id, statusType)),
                 HttpStatus.OK
         );
     }

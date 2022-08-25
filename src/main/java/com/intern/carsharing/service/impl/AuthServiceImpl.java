@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
             return getTokenExpiredMessage(email);
         }
         confirmationTokenService.setConfirmDate(confirmationToken);
-        userService.changeStatus(confirmationToken.getUser(), StatusType.ACTIVE);
+        userService.changeStatus(confirmationToken.getUser().getId(), StatusType.ACTIVE);
         return "Your email address: " + email + " was confirmed successfully!";
     }
 

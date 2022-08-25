@@ -13,5 +13,5 @@ public interface UserService {
 
     User update(Long id, UserUpdateRequestDto updateDto);
 
-    User changeStatus(User user, StatusType statusType);
+    User changeStatus(Long id, StatusType statusType);
 }

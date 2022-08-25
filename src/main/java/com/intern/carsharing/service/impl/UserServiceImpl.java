@@ -50,7 +50,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User changeStatus(User user, StatusType statusType) {
+    public User changeStatus(Long id, StatusType statusType) {
+        User user = get(id);
         user.setStatus(statusService.findByStatusType(statusType));
         return save(user);
     }
