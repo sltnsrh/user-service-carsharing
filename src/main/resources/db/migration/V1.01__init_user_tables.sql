@@ -9,8 +9,8 @@ CREATE TABLE `statuses` (
                             PRIMARY KEY (`id`)
 );
 
-INSERT INTO `statuses` (id, status_type) VALUES (1, 'ACTIVE'),
-                                                (2, 'BLOCKED');
+INSERT INTO `statuses` (id, status_type) VALUES (1, 'ENABLE'),
+                                                (2, 'DISABLE');
 
 CREATE TABLE `roles` (
                          `id` bigint NOT NULL AUTO_INCREMENT,
