@@ -2,6 +2,7 @@ package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,10 +16,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Users", description = "Get and update user info")
@@ -78,6 +81,35 @@ public class UserController {
     ) {
         return new ResponseEntity<>(
                 userMapper.toDto((userService.update(id, requestDto))),
+                HttpStatus.OK
+        );
+    }
+
+    @Operation(
+            summary = "Change user status",
+            description = "Allows to update a user status. Permission only for Admin",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Ok",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseUserDto.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ResponseUserDto> changeStatus(@PathVariable Long id,
+                                                        @RequestParam String status) {
+        return new ResponseEntity<>(
+                userMapper.toDto(
+                        userService.changeStatus(
+                                userService.get(id),
+                                StatusType.valueOf(status.toUpperCase()))
+                ),
                 HttpStatus.OK
         );
     }
