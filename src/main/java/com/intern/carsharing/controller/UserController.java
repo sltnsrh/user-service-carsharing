@@ -2,8 +2,8 @@ package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
@@ -41,7 +41,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200",
                             description = "Ok",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
+                                    schema = @Schema(implementation = UserResponseDto.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "404", description = "Not Found"),
@@ -50,7 +50,7 @@ public class UserController {
             }
     )
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> getUserInfo(
+    public ResponseEntity<UserResponseDto> getUserInfo(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id
     ) {
@@ -65,7 +65,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200",
                             description = "Ok",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
+                                    schema = @Schema(implementation = UserResponseDto.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -75,10 +75,10 @@ public class UserController {
                     @ApiResponse(responseCode = "409", description = "Conflict")
             })
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> update(
+    public ResponseEntity<UserResponseDto> update(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
-            @Valid @RequestBody RequestUserUpdateDto requestDto
+            @Valid @RequestBody UserUpdateRequestDto requestDto
     ) {
         return new ResponseEntity<>(
                 userMapper.toDto((userService.update(id, requestDto))),
@@ -94,7 +94,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200",
                             description = "Ok",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
+                                    schema = @Schema(implementation = UserResponseDto.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -103,7 +103,7 @@ public class UserController {
             })
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> changeStatus(
+    public ResponseEntity<UserResponseDto> changeStatus(
             @PathVariable Long id,
             @Valid @RequestBody ChangeStatusRequestDto requestDto
     ) {

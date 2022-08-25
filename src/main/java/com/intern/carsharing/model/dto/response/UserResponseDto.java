@@ -5,7 +5,7 @@ import java.util.Set;
 import lombok.Data;
 
 @Data
-public class ResponseUserDto {
+public class UserResponseDto {
     @ApiModelProperty(example = "1")
     private Long id;
     @ApiModelProperty(example = "bob@gmail.com")

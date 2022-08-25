@@ -3,7 +3,7 @@ package com.intern.carsharing.service.impl;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.User;
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.StatusService;
@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User update(Long id, RequestUserUpdateDto updateDto) {
+    public User update(Long id, UserUpdateRequestDto updateDto) {
         User user = get(id);
         String newEmail = updateDto.getEmail();
         User userWithSameNewEmail = findByEmail(newEmail);
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         return save(user);
     }
 
-    private void setUpdates(User user, RequestUserUpdateDto updateDto) {
+    private void setUpdates(User user, UserUpdateRequestDto updateDto) {
         user.setEmail(updateDto.getEmail());
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());

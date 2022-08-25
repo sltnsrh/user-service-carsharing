@@ -8,7 +8,7 @@ import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
+import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
@@ -49,7 +49,7 @@ class AuthServiceImplTest {
 
     @Test
     void registerWithValidData() {
-        RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
         requestUserDto.setRepeatPassword("password");

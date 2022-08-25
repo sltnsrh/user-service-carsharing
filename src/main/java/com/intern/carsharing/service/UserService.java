@@ -1,7 +1,7 @@
 package com.intern.carsharing.service;
 
 import com.intern.carsharing.model.User;
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 
 public interface UserService {
@@ -11,7 +11,7 @@ public interface UserService {
 
     User get(Long id);
 
-    User update(Long id, RequestUserUpdateDto updateDto);
+    User update(Long id, UserUpdateRequestDto updateDto);
 
     User changeStatus(User user, StatusType statusType);
 }

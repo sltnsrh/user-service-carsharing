@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class RequestUserUpdateDto {
+public class UserUpdateRequestDto {
     @ApiModelProperty(example = "bob@gmail.com")
     @ValidEmail
     private String email;

@@ -12,8 +12,9 @@ import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.StatusRepository;
@@ -83,8 +84,8 @@ class UserControllerTest {
                 .andReturn();
         String actualResponseBody = mvcResult
                 .getResponse().getContentAsString();
-        ResponseUserDto actualDto = objectMapper
-                .readValue(actualResponseBody, ResponseUserDto.class);
+        UserResponseDto actualDto = objectMapper
+                .readValue(actualResponseBody, UserResponseDto.class);
         Assertions.assertEquals(actualDto.getId(), userFromDb.getId());
         Assertions.assertEquals(actualDto.getEmail(), userFromDb.getEmail());
     }
@@ -143,7 +144,7 @@ class UserControllerTest {
         Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
                 .thenReturn(Optional.of(userFromDb));
 
-        RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
         userUpdateDto.setEmail("newbob@gmail.com");
         userUpdateDto.setFirstName(userFromDb.getFirstName());
         userUpdateDto.setLastName(userFromDb.getLastName());
@@ -163,14 +164,14 @@ class UserControllerTest {
                 .andReturn();
         String actualResponseBody = mvcResult
                 .getResponse().getContentAsString();
-        ResponseUserDto actualResponseDto = objectMapper
-                .readValue(actualResponseBody, ResponseUserDto.class);
+        UserResponseDto actualResponseDto = objectMapper
+                .readValue(actualResponseBody, UserResponseDto.class);
         Assertions.assertEquals(actualResponseDto.getEmail(), userUpdateDto.getEmail());
     }
 
     @Test
     void userUpdateWithInvalidId() throws Exception {
-        RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
         userUpdateDto.setEmail("newbob@gmail.com");
         userUpdateDto.setFirstName(userFromDb.getFirstName());
         userUpdateDto.setLastName(userFromDb.getLastName());
@@ -193,7 +194,7 @@ class UserControllerTest {
 
     @Test
     void userUpdateWithExistingEmail() throws Exception {
-        RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
         userUpdateDto.setEmail("newbob@gmail.com");
         userUpdateDto.setFirstName(userFromDb.getFirstName());
         userUpdateDto.setLastName(userFromDb.getLastName());
@@ -224,7 +225,7 @@ class UserControllerTest {
 
     @Test
     void userUpdateWithExistingEmailAndSameId() throws Exception {
-        RequestUserUpdateDto userUpdateDto = new RequestUserUpdateDto();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
         userUpdateDto.setEmail(userFromDb.getEmail());
         userUpdateDto.setFirstName(userFromDb.getFirstName());
         userUpdateDto.setLastName(userFromDb.getLastName());
@@ -264,11 +265,14 @@ class UserControllerTest {
         Mockito.when(userRepository.save(any(User.class))).thenReturn(userFromDb);
         Mockito.when(statusRepository.findByStatusType(StatusType.BLOCKED)).thenReturn(blocked);
 
+        ChangeStatusRequestDto requestDto = new ChangeStatusRequestDto();
+        requestDto.setStatus("blocked");
         String jwt = jwtTokenProvider
                 .createToken(admin.getEmail(), admin.getRoles());
         mockMvc.perform(patch("/users/{id}", userFromDb.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .param("status", "blocked"))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
     }
 }

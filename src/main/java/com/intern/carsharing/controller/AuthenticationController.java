@@ -1,7 +1,7 @@
 package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
+import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +40,7 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
     public ResponseEntity<Object> register(
-            @Valid @RequestBody RegistrationRequestUserDto requestUserDto
+            @Valid @RequestBody RegistrationUserRequestDto requestUserDto
     ) {
         return new ResponseEntity<>(authService.register(requestUserDto), HttpStatus.CREATED);
     }
