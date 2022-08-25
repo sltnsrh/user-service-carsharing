@@ -2,7 +2,6 @@ package com.intern.carsharing.security.jwt;
 
 import com.intern.carsharing.model.Role;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -76,8 +75,8 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }

@@ -52,7 +52,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void register_ValidData_StatusCreated() throws Exception {
+    void registerWithValidData() throws Exception {
         RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
@@ -100,7 +100,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void register_passwordNotMatch_throw400() throws Exception {
+    void registerWithNotMatchPassword() throws Exception {
         RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("passwor");
@@ -121,7 +121,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void register_passwordExists_throw409() throws Exception {
+    void registerExistUser() throws Exception {
         RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
@@ -142,11 +142,11 @@ class AuthenticationControllerTest {
         String actualResponseBody = mvcResult
                 .getResponse().getContentAsString();
         Assertions.assertTrue(actualResponseBody
-                .contains("User with email bob@gmail.com is already exist"));
+                .contains("User with email bob@gmail.com already exists"));
     }
 
     @Test
-    void register_ageLessThan21_throw400() throws Exception {
+    void registerWithAgeLessThan21() throws Exception {
         RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
@@ -168,7 +168,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_validData_ok() throws Exception {
+    void loginWithValidData() throws Exception {
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("password");
@@ -202,7 +202,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_invalidPassword_basCredentialsError() throws Exception {
+    void loginWithInvalidPassword() throws Exception {
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("passwor");
@@ -235,7 +235,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_passEmptyEmail_BadRequest() throws Exception {
+    void loginWithEmptyEmail() throws Exception {
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("");
         loginRequestDto.setPassword("password");
@@ -255,7 +255,7 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void login_passNotExistEmail_BadCredentials() throws Exception {
+    void loginWithNotExistEmail() throws Exception {
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("password");
@@ -272,7 +272,7 @@ class AuthenticationControllerTest {
                 .readValue(actualResponseBody, ApiExceptionObject.class);
 
         Assertions.assertEquals(apiExceptionObject.getMessage(),
-                "User with email: bob@gmail.com isn't exist");
+                "User with email: bob@gmail.com doesn't exist");
         Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
     }
 }
