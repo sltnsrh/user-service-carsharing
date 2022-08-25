@@ -1,7 +1,9 @@
 package com.intern.carsharing.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,6 +16,7 @@ import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.util.Optional;
@@ -42,6 +45,8 @@ class UserControllerTest {
     private JwtTokenProvider jwtTokenProvider;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private StatusRepository statusRepository;
     private MockMvc mockMvc;
     private User userFromDb;
 
@@ -241,6 +246,29 @@ class UserControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void changeStatusWithValidData() throws Exception {
+        User admin = new User();
+        admin.setId(2L);
+        admin.setEmail("bob1@gmail.com");
+        admin.setPassword("$2a$10$/xbcBmXcySEczXGThC2Rtu/mR9R9PCkFP5PaCShbGkcwu/frh0mUW");
+        admin.setRoles(Set.of(new Role(2L, RoleName.ADMIN)));
+        admin.setStatus(new Status(1L, StatusType.ACTIVE));
+        Mockito.when(userRepository.findUserByEmail(admin.getEmail()))
+                .thenReturn(Optional.of(admin));
+        Status blocked = new Status(2L, StatusType.BLOCKED);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userFromDb));
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(userFromDb);
+        Mockito.when(statusRepository.findByStatusType(StatusType.BLOCKED)).thenReturn(blocked);
+
+        String jwt = jwtTokenProvider
+                .createToken(admin.getEmail(), admin.getRoles());
+        mockMvc.perform(patch("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .param("status", "blocked"))
                 .andExpect(status().isOk());
     }
 }
