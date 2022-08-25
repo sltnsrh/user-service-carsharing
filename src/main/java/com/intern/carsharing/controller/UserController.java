@@ -1,5 +1,7 @@
 package com.intern.carsharing.controller;
 
+import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.model.util.StatusType;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Users", description = "Get and update user info")
@@ -102,14 +103,14 @@ public class UserController {
             })
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> changeStatus(@PathVariable Long id,
-                                                        @RequestParam String status) {
+    public ResponseEntity<ResponseUserDto> changeStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangeStatusRequestDto requestDto
+    ) {
+        StatusType statusType = StatusType.valueOf(requestDto.getStatus().toUpperCase());
+        User user = userService.get(id);
         return new ResponseEntity<>(
-                userMapper.toDto(
-                        userService.changeStatus(
-                                userService.get(id),
-                                StatusType.valueOf(status.toUpperCase()))
-                ),
+                userMapper.toDto(userService.changeStatus(user, statusType)),
                 HttpStatus.OK
         );
     }
