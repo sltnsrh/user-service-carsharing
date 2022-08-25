@@ -7,12 +7,14 @@ import com.intern.carsharing.service.ConfirmationTokenService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
-    private static final long TOKEN_EXPIRATION_PERIOD_MIN = 15;
+    @Value("${confirmation.token.expiration.min}")
+    private long expirationPeriodMin;
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
     @Override
@@ -23,7 +25,7 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
         confirmationToken.setUser(user);
         confirmationToken.setCreatedAt(LocalDateTime.now());
         confirmationToken
-                .setExpiredAt(LocalDateTime.now().plusMinutes(TOKEN_EXPIRATION_PERIOD_MIN));
+                .setExpiredAt(LocalDateTime.now().plusMinutes(expirationPeriodMin));
         return confirmationTokenRepository.save(confirmationToken);
     }
 
