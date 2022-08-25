@@ -1,0 +1,572 @@
+openapi: 3.0.3
+info:
+  title: User Service API
+  description: User service for car sharing app
+  contact:
+    name: Serhii Salatin
+    email: ssalatin@griddynamics.com
+  version: v1.00
+servers:
+  - url: http://localhost:8080
+    description: Inferred Url
+tags:
+  - name: authentication
+    description: Authentication Controller
+  - name: users
+    description: User Controller
+  - name: cars
+    description: Car Controller
+paths:
+  /login:
+    post:
+      tags:
+        - authentication
+      summary: User authentication
+      description: Allows to authenticate a user
+      operationId: loginUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
+            example: 
+              email: "bob@gmail.com"
+              password: "password"
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+              example:
+                email: bob@gmail.com
+                token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2JAZ21haWwuY29tIiwicm9sZXMiOlsiQURNSU4iXSwiaWF0IjoxNjU5OTc3MDYzLCJleHAiOjE2NTk5Nzc0MjN9.eOtCiAFnezbSRBsj6kw77I40qStXkWgwBInkUnodbzg
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: Email field can't be empty or blank
+                httpStatus: BAD_REQUEST  
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+              
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: User with email bob@gmail.com isn't exist
+                httpStatus: UNAUTHORIZED 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+      security:
+        - Authorization:
+            - global
+  /registration:
+    post:
+      tags:
+        - authentication
+      summary: Registration a new user
+      description: Allows to registrate a new user
+      operationId: registerUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequestUserDto'
+            example:
+              age: 21
+              driverLicence: HKJ423KJU
+              email: bob@gmail.com
+              firstName: Bob
+              lastName: Alister
+              password: password
+              repeatPassword: password
+              roles:
+                - ADMIN
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUserDto'
+              example:
+                id: 1L
+                email: "bob@gmail.com"
+                password: "98DSFD9SFSDKFSKJDBGJKBGFDBGMDFBKFKH"
+                firstName: "Bob"
+                lastName: "Alister"
+                age: 21
+                driverLicence: "HKJ423KJU"
+                roles: ["ADMIN"]
+                status: "ENABLE"
+        '400':
+          description: Bad Request 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: User with email bob@gmail.com is already exist
+                httpStatus: CONFLICT 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+        '409':
+          description: Conflict
+          content: 
+            application/json:
+              schema:
+               $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: Passwords do not match
+                httpStatus: BAD_REQUEST 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+  /users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get profile info
+      description: Allows to get profile info about a user by id
+      operationId: getInfoUsingGET 
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user to get
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUserDto'
+              example:
+                id: 1L
+                email: "bob@gmail.com"
+                password: "98DSFD9SFSDKFSKJDBGJKBGFDBGMDFBKFKH"
+                firstName: "Bob"
+                lastName: "Alister"
+                age: 21
+                driverLicence: "HKJ423KJU"
+                roles: ["ADMIN"]
+                status: "ENABLE"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: "Can't find user with id: 1"
+                httpStatus: NOT_FOUND 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /users/update/{id}:
+    put:
+      tags:
+        - users
+      summary: Update user info
+      description: Allows user to update some info about himself
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user to update
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUserUpdateDto'
+            example:
+              email: bob@gmail.com
+              firstName: Bob
+              lastName: Alister
+              age: 25
+              driverLicence: HKJ423KJU
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUserDto'
+              example:
+                id: 1L
+                email: "bob@gmail.com"
+                password: "98DSFD9SFSDKFSKJDBGJKBGFDBGMDFBKFKH"
+                firstName: "Bob"
+                lastName: "Alister"
+                age: 25
+                driverLicence: "HKJ423KJU"
+                roles: ["ADMIN"]
+                status: "ENABLE"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: "Can't find user with id: 1"
+                httpStatus: NOT_FOUND 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+        '405':
+          description: Method Not Allowed
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          description: Bad Request
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionObject'
+              example:
+                message: "User with email bob@gmail.com is already exist"
+                httpStatus: CONFLICT 
+                timestamp: 2022-08-09T18:54:09.923428+03:00[Europe/Kiev]
+  /users/status/{id}:
+    put:
+      tags:
+        - users
+      summary: Change users status
+      description: Admin cans change users status between ENABLE and DISABLE
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user to update
+          example: 1  
+        - in: query
+          name: status
+          schema:
+            type: string
+          required: true
+          description: There are two values available ENABLE and DISABLE. They are case insensitive
+          example: disable
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUserDto'
+              example:
+                id: 1L
+                email: "bob@gmail.com"
+                password: "98DSFD9SFSDKFSKJDBGJKBGFDBGMDFBKFKH"
+                firstName: "Bob"
+                lastName: "Alister"
+                age: 21
+                driverLicence: "HKJ423KJU"
+                roles: ["ADMIN"]
+                status: "DISABLE"
+  /users/tobalance/{id}:
+    put:
+      tags: 
+        - users
+      summary: Put money on a users balance
+      description: Allows users and administrators to deposit money to the user's balance
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user
+          example: 1
+        - in: query
+          name: value
+          description: The sum of money to put
+          schema: 
+            type: string
+          required: true
+          example: 100.50
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: $100.50 has been credited to the balance of the user with id 1
+  /users/frombalance/{id}:
+    put:
+      tags: 
+        - users
+      summary: Get money from a users balance
+      description: Allows administrators to get money from the user's balance
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user
+          example: 1
+        - in: query
+          name: value
+          description: The sum of money to get
+          schema: 
+            type: string
+          required: true
+          example: 100.50
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 100.50 dollars was debited from users balance with id 1
+  /cars/add/{id}:
+    post:
+      tags:
+        - cars
+      summary: Add a car to a rent
+      description: Allows car owner to add a new car to a rent
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user with role CAR_OWNER
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAddCarDto'
+            example: 
+              brand: BMW
+              model: 540i
+              gearBox: automatic
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Your car BMW 540i was successfully added to a rent
+  /cars/changestatus/{id}:
+    put:
+      tags:
+        - cars
+      summary: Change a car status
+      description: Allows car owner to disable/enable a car
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the car
+          example: 1
+        - in: query
+          name: status
+          schema:
+            type: string
+          required: true
+          description: There are two values available ENABLE and DISABLE. They are case insensitive
+          example: disable
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Your car BMW 540i  was disabled
+  /cars/statistics/{id}:
+    get:
+      tags:
+        - cars
+      summary: Get cars statistics
+      description: Allows car owner to get by cars id statistics about his car
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the car
+          example: 1  
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Here is some statistics about your car
+  /users/statistics/{id}:
+    get:
+      tags:
+        - users
+      summary: Get users statistics
+      description: Allows user to get by id statistics about himself
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the user
+          example: 1
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Here is some statistics about you  
+      security:
+        - Authorization:
+            - global
+components:
+  schemas:
+    RequestAddCarDto:
+      title: RequestAddCarDto
+      type: object
+      properties:
+        brand:
+          type: string
+        model:
+          type: string
+        gearBox:
+          type: string
+    RequestUserUpdateDto:
+      title: RequestUserUpdateDto
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        driverLicence:
+          type: string
+    LoginResponseDto:
+      title: LoginResponseDto
+      type: object
+      properties:
+        email:
+          type: string
+        token:
+          type: string
+    ApiExceptionObject:
+      title: ApiExceptionObject
+      type: object
+      properties:
+        message:
+          type: string
+        httpStatus:
+          type: object
+        timestamp:
+          type: object
+    LoginRequestDto:
+      title: LoginRequestDto
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    ResponseUserDto:
+      title: ResponseUserDto
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        driverLicence:
+          type: string
+        roles:
+          type: string
+        status:
+          type: string
+    RegistrationRequestUserDto:
+      title: RegistrationRequestUserDto
+      required:
+        - age
+        - password
+        - roles
+      type: object
+      properties:
+        age:
+          type: integer
+          format: int32
+        driverLicence:
+          maxLength: 9
+          minLength: 9
+          type: string
+        email:
+          type: string
+        firstName:
+          maxLength: 2147483647
+          minLength: 3
+          type: string
+        lastName:
+          maxLength: 2147483647
+          minLength: 3
+          type: string
+        password:
+          maxLength: 2147483647
+          minLength: 6
+          type: string
+        repeatPassword:
+          type: string
+        roles:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    View:
+      title: View
+      type: object
+      properties:
+        contentType:
+          type: string
+  securitySchemes:
+    Authorization:
+      type: apiKey
+      name: Authorization
+      in: header
