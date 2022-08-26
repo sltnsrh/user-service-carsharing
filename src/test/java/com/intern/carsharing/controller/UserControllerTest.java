@@ -91,6 +91,17 @@ class UserControllerTest {
     }
 
     @Test
+    void getUserInfoByUserWithAnotherId() throws Exception {
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
+        mockMvc.perform(get("/users/{id}", 2)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void getUserInfoWithNotExistUserId() throws Exception {
         Mockito.when(userRepository.findById(1L))
                 .thenReturn(Optional.empty());
