@@ -29,7 +29,7 @@ public class AuthenticationController {
     @Operation(
             summary = "Registration a new user",
             description = "Allows to register a new user. "
-                    + "As response user gets a message with confirmation email url.",
+                    + "As response user gets a message that confirmation email was sent.",
             tags = {"Authentication"},
             responses = {
                     @ApiResponse(responseCode = "201", description = "Created"),
@@ -68,7 +68,7 @@ public class AuthenticationController {
     @Operation(
             summary = "User email confirmation",
             description = "Allows to confirm user email. "
-                    + "As response user gets message that confirmation email was sent.",
+                    + "As response user gets message that email was successfully confirmed.",
             tags = {"Authentication"},
             responses = {
                     @ApiResponse(responseCode = "200", description = "Ok"),

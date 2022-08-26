@@ -35,7 +35,8 @@ public class UserController {
 
     @Operation(
             summary = "Get a user info",
-            description = "Allows to get a user info.",
+            description = "Allows to get a user info. Admin has access to all accounts, "
+                    + "but users can get info only about themselves.",
             tags = {"Users"},
             responses = {
                     @ApiResponse(responseCode = "200",
@@ -60,7 +61,8 @@ public class UserController {
 
     @Operation(
             summary = "Update a user info",
-            description = "Allows to update a info about user.",
+            description = "Allows to update a info about user. Admin has access to all accounts, "
+                    + "but users can update info only about themselves.",
             tags = {"Users"},
             responses = {
                     @ApiResponse(responseCode = "200",

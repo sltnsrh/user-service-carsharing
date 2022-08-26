@@ -22,6 +22,6 @@ public class UserResponseDto {
     private String driverLicence;
     @ApiModelProperty(example = "[\"USER\"]")
     private Set<String> roles;
-    @ApiModelProperty(example = "ENABLE")
+    @ApiModelProperty(example = "ACTIVE")
     private String status;
 }
