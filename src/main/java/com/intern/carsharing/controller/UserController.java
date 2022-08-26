@@ -106,7 +106,8 @@ public class UserController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponseDto> changeStatus(
-            @PathVariable Long id,
+            @Parameter(description = "User id", example = "1")
+            @PathVariable("id") Long id,
             @Valid @RequestBody ChangeStatusRequestDto requestDto
     ) {
         StatusType statusType = StatusType.valueOf(requestDto.getStatus().toUpperCase());

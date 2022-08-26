@@ -80,4 +80,17 @@ public class ApiExceptionHandler {
         );
         return new ResponseEntity<>(apiExceptionObject, badRequest);
     }
+
+    @ExceptionHandler(value = {LimitedPermissionException.class})
+    public ResponseEntity<ApiExceptionObject> handleLimitedPermissionException(
+            LimitedPermissionException e
+    ) {
+        HttpStatus forbidden = HttpStatus.FORBIDDEN;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                forbidden,
+                ZonedDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, forbidden);
+    }
 }
