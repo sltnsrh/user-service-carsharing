@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,21 +15,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "confirmation_tokens")
-public class ConfirmationToken {
+@Table(name = "refresh_tokens")
+public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    @Column(nullable = false, name = "token")
-    private String token;
-    @Column(nullable = false, name = "created_at")
-    private LocalDateTime createdAt;
-    @Column(nullable = false, name = "expired_at")
-    private LocalDateTime expiredAt;
-    @Column(name = "confirmed_at")
-    private LocalDateTime confirmedAt;
-    @ManyToOne
-    @JoinColumn(nullable = false, name = "user_id")
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+    @Column(name = "token", nullable = false, unique = true)
+    private String token;
+    @Column(name = "expired_at", nullable = false)
+    private LocalDateTime expiredAt;
 }
