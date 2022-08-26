@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
+        checkPermission(id);
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
     }
@@ -43,11 +44,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User update(Long id, UserUpdateRequestDto updateDto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User client = (User) authentication.getDetails();
-        if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
-            throw new LimitedPermissionException("Users can update only own accounts.");
-        }
         User user = get(id);
         String newEmail = updateDto.getEmail();
         User userWithSameNewEmail = findByEmail(newEmail);
@@ -78,5 +74,17 @@ public class UserServiceImpl implements UserService {
     private boolean containsRoleAdmin(Set<Role> roles) {
         return roles.stream()
                 .anyMatch(role -> role.getRoleName().name().equals("ADMIN"));
+    }
+
+    private void checkPermission(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authentication.getPrincipal().toString().equals("anonymousUser")) {
+            User client = (User) authentication.getDetails();
+            if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
+                throw new LimitedPermissionException(
+                        "Users have access only to their own accounts."
+                );
+            }
+        }
     }
 }
