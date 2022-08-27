@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.service.RefreshTokenService;
@@ -36,6 +37,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public RefreshToken getByToken(String token) {
-        return null;
+        return tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RefreshTokenException(
+                        "Refresh token: " + token + " wasn't found in a DB."
+                ));
     }
 }
