@@ -3,6 +3,7 @@ package com.intern.carsharing.service.impl;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
@@ -11,6 +12,7 @@ import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.ConfirmationTokenService;
+import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
@@ -31,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder encoder;
     private final UserMapper userMapper;
     private final ConfirmationTokenService confirmationTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public String register(RegistrationUserRequestDto requestUserDto) {
@@ -46,14 +49,26 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseDto login(LoginRequestDto requestDto) {
-        User user = userService.findByEmail(requestDto.getEmail());
-        if (user == null) {
-            throw new UsernameNotFoundException(
-                    "User with email: " + requestDto.getEmail() + " doesn't exist"
-            );
-        }
+        String emailFromRequest = requestDto.getEmail();
+        User user = userService.findByEmail(emailFromRequest);
+        checkIfUserExists(user, emailFromRequest);
         String email = user.getEmail();
         String password = requestDto.getPassword();
+        authenticate(email, password);
+        String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
+        RefreshToken refreshToken = refreshTokenService.create(user.getId());
+        return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
+    }
+
+    private void checkIfUserExists(User user, String emailFromRequest) {
+        if (user == null) {
+            throw new UsernameNotFoundException(
+                    "User with email: " + emailFromRequest + " doesn't exist"
+            );
+        }
+    }
+
+    private void authenticate(String email, String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
@@ -61,8 +76,6 @@ public class AuthServiceImpl implements AuthService {
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Wrong password, try again");
         }
-        String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
-        return new LoginResponseDto(email, jwtToken);
     }
 
     @Override

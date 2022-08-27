@@ -5,6 +5,7 @@ import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(userService.get(id));
         refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(expirationPeriod));
+        refreshToken.setExpiredAt(LocalDateTime.now(ZoneId.systemDefault())
+                .plusMinutes(expirationPeriod));
         return tokenRepository.save(refreshToken);
     }
 
