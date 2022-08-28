@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
@@ -20,6 +21,7 @@ import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
+import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -50,6 +52,8 @@ class AuthenticationControllerTest {
     private ConfirmationTokenRepository confirmationTokenRepository;
     @MockBean
     private StatusRepository statusRepository;
+    @MockBean
+    private RefreshTokenRepository refreshTokenRepository;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -189,11 +193,14 @@ class AuthenticationControllerTest {
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
         userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
 
-        Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
+        Mockito.when(userRepository.findUserByEmail(any()))
                 .thenReturn(Optional.of(userFromDb));
+        Mockito.when((userRepository.findById(1L))).thenReturn(Optional.of(userFromDb));
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
 
         MvcResult mvcResult = mockMvc.perform(post("/login")
-                .with(user("bob@gmail.com").password("password").roles("ADMIN"))
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
@@ -204,6 +211,7 @@ class AuthenticationControllerTest {
 
         Assertions.assertEquals(loginRequestDto.getEmail(), loginResponseDto.getEmail());
         Assertions.assertFalse(loginResponseDto.getToken().isBlank());
+        Assertions.assertFalse(loginResponseDto.getRefreshToken().isBlank());
     }
 
     @Test
@@ -227,7 +235,6 @@ class AuthenticationControllerTest {
                 .thenReturn(Optional.of(userFromDb));
 
         MvcResult mvcResult = mockMvc.perform(post("/login")
-                        .with(user("bob@gmail.com").password("passwor").roles("ADMIN"))
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isUnauthorized())

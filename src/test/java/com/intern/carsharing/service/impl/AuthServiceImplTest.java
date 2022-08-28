@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
@@ -14,6 +15,7 @@ import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.ConfirmationTokenService;
+import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
@@ -46,6 +48,8 @@ class AuthServiceImplTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private ConfirmationTokenService confirmationTokenService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @Test
     void registerWithValidData() {
@@ -99,6 +103,7 @@ class AuthServiceImplTest {
     @Test
     void loginWithValidData() {
         User user = new User();
+        user.setId(1L);
         user.setEmail("bob@gmail.com");
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
@@ -106,14 +111,19 @@ class AuthServiceImplTest {
                 .thenReturn("token");
         Mockito.when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 "bob@gmail.com", "password"))).thenReturn(null);
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenService.create(user.getId())).thenReturn(refreshToken);
 
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("password");
 
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
-        Assertions.assertEquals(loginResponseDto.getEmail(), "bob@gmail.com");
-        Assertions.assertEquals(loginResponseDto.getToken(), "token");
+        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertEquals("token", loginResponseDto.getToken());
+        Assertions.assertEquals("refreshtoken", loginResponseDto.getRefreshToken());
+
     }
 
     @Test
