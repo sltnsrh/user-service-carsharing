@@ -28,7 +28,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +41,6 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
 
     @Override
-    @Transactional
     public String register(RegistrationUserRequestDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
@@ -71,7 +69,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String emailFromRequest = requestDto.getEmail();
         User user = userService.findByEmail(emailFromRequest);
@@ -103,7 +100,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public String confirm(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
         if (confirmationToken == null) {
@@ -132,7 +128,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public String resendEmail(String email) {
         User user = userService.findByEmail(email);
         if (user == null) {
@@ -148,7 +143,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
         RefreshToken refreshToken = resolveRefreshToken(requestDto.getToken());
         String email = refreshToken.getUser().getEmail();
