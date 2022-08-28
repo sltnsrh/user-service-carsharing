@@ -28,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
 
     @Override
+    @Transactional
     public String register(RegistrationUserRequestDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
@@ -69,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String emailFromRequest = requestDto.getEmail();
         User user = userService.findByEmail(emailFromRequest);
@@ -100,6 +103,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public String confirm(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
         if (confirmationToken == null) {
@@ -119,7 +123,16 @@ public class AuthServiceImpl implements AuthService {
         return "Your email address: " + email + " was confirmed successfully!";
     }
 
+    private String getTokenExpiredMessage(String email) {
+        return "Confirmation token was expired."
+                + System.lineSeparator()
+                + "Follow the link to get a new verification mail: "
+                + System.lineSeparator()
+                + "localhost:8080/resend?email=" + email;
+    }
+
     @Override
+    @Transactional
     public String resendEmail(String email) {
         User user = userService.findByEmail(email);
         if (user == null) {
@@ -134,15 +147,8 @@ public class AuthServiceImpl implements AuthService {
         return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
-    private String getTokenExpiredMessage(String email) {
-        return "Confirmation token was expired."
-                + System.lineSeparator()
-                + "Follow the link to get a new verification mail: "
-                + System.lineSeparator()
-                + "localhost:8080/resend?email=" + email;
-    }
-
     @Override
+    @Transactional
     public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
         RefreshToken refreshToken = resolveRefreshToken(requestDto.getToken());
         String email = refreshToken.getUser().getEmail();
@@ -154,6 +160,7 @@ public class AuthServiceImpl implements AuthService {
     private RefreshToken resolveRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenService.getByToken(token);
         if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now(ZoneId.systemDefault()))) {
+            refreshTokenService.delete(refreshToken);
             throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
         }
         return refreshToken;
