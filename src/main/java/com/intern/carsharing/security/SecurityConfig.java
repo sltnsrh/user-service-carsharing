@@ -26,7 +26,8 @@ public class SecurityConfig {
             "/registration",
             "/login",
             "/confirm",
-            "/resend"
+            "/resend",
+            "/refresh-token"
     };
     private final JwtTokenFilter jwtTokenFilter;
 
