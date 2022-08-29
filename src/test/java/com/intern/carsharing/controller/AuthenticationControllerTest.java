@@ -1,7 +1,6 @@
 package com.intern.carsharing.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,6 +14,7 @@ import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
@@ -323,5 +323,44 @@ class AuthenticationControllerTest {
         mockMvc.perform(get("/resend?email=bob@gmail.com"))
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    void refreshTokenWithValidRefreshToken() throws Exception {
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.findByToken("refreshtoken"))
+                .thenReturn(Optional.of(refreshToken));
+
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void refreshTokenWithExpiredRefreshToken() throws Exception {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(new User());
+        refreshToken.setExpiredAt(LocalDateTime.now().minusMinutes(15));
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.findByToken("refreshtoken"))
+                .thenReturn(Optional.of(refreshToken));
+
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isForbidden());
+        Mockito.verify(refreshTokenRepository).delete(any(RefreshToken.class));
     }
 }

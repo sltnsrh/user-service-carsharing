@@ -15,6 +15,7 @@ import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.RefreshTokenService;
@@ -52,6 +53,8 @@ class AuthServiceImplTest {
     private ConfirmationTokenService confirmationTokenService;
     @Mock
     private RefreshTokenService refreshTokenService;
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Test
     void registerWithValidData() {
@@ -239,7 +242,8 @@ class AuthServiceImplTest {
         refreshToken.setToken("refreshtoken");
 
         Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
-        Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getRoles())).thenReturn("newauthtoken");
+        Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getRoles()))
+                .thenReturn("newauthtoken");
         LoginResponseDto actual = authService.refreshToken(requestDto);
         Assertions.assertEquals(user.getEmail(), actual.getEmail());
         Assertions.assertEquals("newauthtoken", actual.getToken());
@@ -256,6 +260,7 @@ class AuthServiceImplTest {
         refreshToken.setExpiredAt(LocalDateTime.now().minusMinutes(15));
 
         Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
-        Assertions.assertThrows(RefreshTokenException.class, () -> authService.refreshToken(requestDto));
+        Assertions.assertThrows(RefreshTokenException.class,
+                () -> authService.refreshToken(requestDto));
     }
 }
