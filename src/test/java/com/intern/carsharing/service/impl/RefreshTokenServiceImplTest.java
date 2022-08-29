@@ -1,12 +1,8 @@
 package com.intern.carsharing.service.impl;
 
-import static org.mockito.ArgumentMatchers.any;
-
 import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.model.RefreshToken;
-import com.intern.carsharing.model.User;
 import com.intern.carsharing.repository.RefreshTokenRepository;
-import com.intern.carsharing.service.UserService;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,19 +18,6 @@ class RefreshTokenServiceImplTest {
     private RefreshTokenServiceImpl refreshTokenService;
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
-    @Mock
-    private UserService userService;
-    @Mock
-    private RefreshTokenRepository tokenRepository;
-
-    @Test
-    void createTokenWithExistUserId() {
-        Mockito.when(userService.get(1L)).thenReturn(new User());
-        RefreshToken token = new RefreshToken();
-        Mockito.when(tokenRepository.save(any(RefreshToken.class))).thenReturn(token);
-        RefreshToken actual = refreshTokenService.create(1L);
-        Assertions.assertNotNull(actual);
-    }
 
     @Test
     void getByTokenWithExistToken() {
@@ -45,7 +28,6 @@ class RefreshTokenServiceImplTest {
 
     @Test
     void getByTokenWithNotExistToken() {
-        Mockito.when(refreshTokenRepository.findByToken("token")).thenReturn(Optional.empty());
         Assertions.assertThrows(RefreshTokenException.class, () -> refreshTokenService.getByToken("token"));
     }
 }
