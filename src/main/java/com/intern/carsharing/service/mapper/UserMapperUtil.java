@@ -21,7 +21,7 @@ public class UserMapperUtil {
 
     @Named("setStatusActive")
     Status setStatusActive(String value) {
-        return statusService.findByStatusType(StatusType.ENABLE);
+        return statusService.findByStatusType(StatusType.ACTIVE);
     }
 
     @Named("setUserRole")

@@ -49,7 +49,6 @@ class AuthServiceImplTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRoles(Set.of("ADMIN"));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(null);
 
         User user = new User();
@@ -60,7 +59,7 @@ class AuthServiceImplTest {
         user.setAge(21);
         user.setDriverLicence("DFG23K34H");
         user.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        user.setStatus(new Status(1L, StatusType.valueOf("ENABLE")));
+        user.setStatus(new Status(1L, StatusType.valueOf("ACTIVE")));
         Mockito.when(userMapper.toModel(requestUserDto)).thenReturn(user);
         Mockito.when(passwordEncoder.encode("password"))
                 .thenReturn("$2a$10$hTlj76.onzhNMv/sh64KZ.NQl30XxR7lhbOIeAeP8hO7d6UTJyo/C");
@@ -74,7 +73,7 @@ class AuthServiceImplTest {
         userAfterSave.setAge(21);
         userAfterSave.setDriverLicence("DFG23K34H");
         userAfterSave.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        userAfterSave.setStatus(new Status(1L, StatusType.valueOf("ENABLE")));
+        userAfterSave.setStatus(new Status(1L, StatusType.valueOf("ACTIVE")));
         Mockito.when(userService.save(user)).thenReturn(userAfterSave);
 
         ResponseUserDto responseUserDto = new ResponseUserDto();
@@ -86,7 +85,7 @@ class AuthServiceImplTest {
         responseUserDto.setAge(21);
         responseUserDto.setDriverLicence("DFG23K34H");
         responseUserDto.setRoles(Set.of("ADMIN"));
-        responseUserDto.setStatus("ENABLE");
+        responseUserDto.setStatus("ACTIVE");
         Mockito.when(userMapper.toDto(userAfterSave)).thenReturn(responseUserDto);
 
         ResponseUserDto actual = authService.register(requestUserDto);
@@ -98,7 +97,7 @@ class AuthServiceImplTest {
         Assertions.assertEquals(21, actual.getAge());
         Assertions.assertEquals("DFG23K34H", actual.getDriverLicence());
         Assertions.assertEquals(Set.of("ADMIN"), actual.getRoles());
-        Assertions.assertEquals("ENABLE", actual.getStatus());
+        Assertions.assertEquals("ACTIVE", actual.getStatus());
     }
 
     @Test

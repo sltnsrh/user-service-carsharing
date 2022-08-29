@@ -70,7 +70,7 @@ public class UserController {
                     @ApiResponse(responseCode = "405", description = "Method Not Allowed"),
                     @ApiResponse(responseCode = "409", description = "Conflict")
             })
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseUserDto> update(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
