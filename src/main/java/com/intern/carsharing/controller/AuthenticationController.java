@@ -98,6 +98,18 @@ public class AuthenticationController {
         return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Refresh user authentication token",
+            description = "Allows to refresh user authentication token. "
+                    + "As response user gets json body with username, "
+                    + "new authentication token and refresh token.",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden")
+            }
+    )
     @PostMapping("/refresh-token")
     public ResponseEntity<LoginResponseDto> refreshToken(
             @RequestBody RefreshTokenRequestDto requestDto
