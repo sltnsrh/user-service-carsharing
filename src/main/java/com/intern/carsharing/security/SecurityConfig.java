@@ -21,7 +21,9 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/webjars/**",
             "/registration",
-            "/login"
+            "/login",
+            "/confirm",
+            "/resend"
     };
     private final JwtTokenFilter jwtTokenFilter;
 

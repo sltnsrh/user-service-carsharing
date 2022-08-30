@@ -3,11 +3,13 @@ package com.intern.carsharing.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
+import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
@@ -17,7 +19,10 @@ import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.ResponseUserDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.ConfirmationTokenRepository;
+import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +46,10 @@ class AuthenticationControllerTest {
     private WebApplicationContext context;
     @MockBean
     private UserRepository userRepository;
+    @MockBean
+    private ConfirmationTokenRepository confirmationTokenRepository;
+    @MockBean
+    private StatusRepository statusRepository;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -87,15 +96,15 @@ class AuthenticationControllerTest {
         Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
                 .thenReturn(Optional.empty());
         Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
+        ConfirmationToken confirmationToken = new ConfirmationToken();
+        confirmationToken.setToken("confirmationtoken");
+        Mockito.when(confirmationTokenRepository.save(any(ConfirmationToken.class)))
+                .thenReturn(confirmationToken);
 
-        MvcResult mvcResult = mockMvc.perform(post("/registration")
+        mockMvc.perform(post("/registration")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(requestUserDto)))
-                .andExpect(status().isCreated())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        Assertions.assertEquals(actualResponseBody,
-                objectMapper.writeValueAsString(responseUserDto));
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -270,5 +279,40 @@ class AuthenticationControllerTest {
         Assertions.assertEquals(apiExceptionObject.getMessage(),
                 "User with email: bob@gmail.com doesn't exist");
         Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void confirmEmailWithValidToken() throws Exception {
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        ConfirmationToken confirmationToken = new ConfirmationToken();
+        confirmationToken.setUser(user);
+        confirmationToken.setId(1L);
+        confirmationToken.setCreatedAt(LocalDateTime.now());
+        confirmationToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
+        confirmationToken.setToken("confirmationtoken");
+        Mockito.when(confirmationTokenRepository.findByToken("confirmationtoken"))
+                .thenReturn(Optional.of(confirmationToken));
+        Mockito.when(confirmationTokenRepository.save(any())).thenReturn(null);
+        Mockito.when(statusRepository.findByStatusType(StatusType.ACTIVE))
+                .thenReturn(new Status(1L, StatusType.ACTIVE));
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(null);
+        mockMvc.perform(get("/confirm?token=confirmationtoken"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void resendEmailWithValidData() throws Exception {
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setStatus(new Status(1L, StatusType.INVALIDATE));
+        Mockito.when(userRepository.findUserByEmail("bob@gmail.com")).thenReturn(Optional.of(user));
+        ConfirmationToken confirmationToken = new ConfirmationToken();
+        confirmationToken.setToken("confirmationtoken");
+        Mockito.when(confirmationTokenRepository.save(any(ConfirmationToken.class)))
+                .thenReturn(confirmationToken);
+        mockMvc.perform(get("/resend?email=bob@gmail.com"))
+                .andExpect(status().isOk());
+
     }
 }
