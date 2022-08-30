@@ -125,7 +125,7 @@ public class UserController {
     @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     public ResponseEntity<String> toBalance(
             @PathVariable("id") Long id,
-            @RequestBody BalanceRequestDto requestDto
+            @Valid @RequestBody BalanceRequestDto requestDto
     ) {
         return new ResponseEntity<>(userService.toBalance(id, requestDto), HttpStatus.OK);
     }

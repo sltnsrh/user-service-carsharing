@@ -94,6 +94,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String toBalance(Long id, BalanceRequestDto balanceRequestDto) {
+        checkPermission(id);
         Balance balance = balanceService.findByUserId(id);
         balance.setValue(balance.getValue().add(balanceRequestDto.getValue()));
         balanceService.save(balance);
