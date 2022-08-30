@@ -21,7 +21,7 @@ public class BalanceServiceImpl implements BalanceService {
 
     @Override
     public Balance findByUserId(Long id) {
-        return balanceRepository.findByUser(id).orElseThrow(
+        return balanceRepository.findByUserId(id).orElseThrow(
                 () -> new BalanceNotFoundException("Balance with user id: "
                 + id + " wasn't found.")
         );
