@@ -14,6 +14,7 @@ import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
+import com.intern.carsharing.service.BalanceService;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
@@ -28,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +41,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final ConfirmationTokenService confirmationTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final BalanceService balanceService;
 
     @Override
+    @Transactional
     public String register(RegistrationUserRequestDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
@@ -48,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
             throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
         user = getUserFromDtoWithEncodedPassword(requestUserDto);
+        balanceService.createNewBalance(user);
         ConfirmationToken confirmationToken = confirmationTokenService.create(user);
         return getRegistrationResponseMessage(confirmationToken.getToken());
     }
