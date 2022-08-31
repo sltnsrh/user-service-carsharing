@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         Balance balance = balanceService.findByUserId(id);
         BigDecimal currentValue = balance.getValue();
         BigDecimal requestValue = balanceRequestDto.getValue();
-        if (currentValue.compareTo(requestValue) <= 0) {
+        if (currentValue.compareTo(requestValue) < 0) {
             return "Not enough money on balance for a transaction";
         }
         balance.setValue(currentValue.subtract(requestValue));
