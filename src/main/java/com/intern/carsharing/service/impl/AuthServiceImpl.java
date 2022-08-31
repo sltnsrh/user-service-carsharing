@@ -148,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(noRollbackFor = RefreshTokenException.class)
     public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
         RefreshToken refreshToken = resolveRefreshToken(requestDto.getToken());
         String email = refreshToken.getUser().getEmail();
