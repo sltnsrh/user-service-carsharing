@@ -6,6 +6,7 @@ import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -33,6 +34,22 @@ class UserServiceImplTest {
     private UserRepository userRepository;
     @Mock
     private StatusService statusService;
+
+    @Test
+    void updateWithValidUser() {
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto();
+        userUpdateRequestDto.setEmail("newmail@gmail.com");
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("bob@gmail.com");
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findUserByEmail(userUpdateRequestDto.getEmail()))
+                .thenReturn(Optional.of(user));
+        user.setEmail(userUpdateRequestDto.getEmail());
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
+        User actual = userService.update(1L, userUpdateRequestDto);
+        Assertions.assertEquals(userUpdateRequestDto.getEmail(), actual.getEmail());
+    }
 
     @Test
     void changeStatusOfExistingUser() {
