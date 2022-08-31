@@ -68,12 +68,16 @@ public class UserServiceImpl implements UserService {
         User user = get(id);
         String newEmail = updateDto.getEmail();
         User userWithSameNewEmail = findByEmail(newEmail);
-        if (userWithSameNewEmail != null && !userWithSameNewEmail.getId().equals(id)) {
+        checkIfUserWithNewEmailExists(userWithSameNewEmail, newEmail, id);
+        setUpdates(user, updateDto);
+        return userRepository.save(user);
+    }
+
+    private void checkIfUserWithNewEmailExists(User user, String newEmail, Long id) {
+        if (user != null && !user.getId().equals(id)) {
             throw new UserAlreadyExistException("User with email " + newEmail
                     + " already exists");
         }
-        setUpdates(user, updateDto);
-        return userRepository.save(user);
     }
 
     private void setUpdates(User user, UserUpdateRequestDto updateDto) {
