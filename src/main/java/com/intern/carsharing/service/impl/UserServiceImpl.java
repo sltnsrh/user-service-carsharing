@@ -12,6 +12,7 @@ import com.intern.carsharing.service.BalanceService;
 import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,6 +77,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String toBalance(Long id, BalanceRequestDto balanceRequestDto) {
         permissionService.check(id);
         Balance balance = balanceService.findByUserId(id);
@@ -83,5 +85,20 @@ public class UserServiceImpl implements UserService {
         balanceService.save(balance);
         return balanceRequestDto.getValue() + " " + balance.getCurrency()
             + " has been credited to the balance of the user with id " + id;
+    }
+
+    @Override
+    @Transactional
+    public String fromBalance(Long id, BalanceRequestDto balanceRequestDto) {
+        Balance balance = balanceService.findByUserId(id);
+        BigDecimal currentValue = balance.getValue();
+        BigDecimal requestValue = balanceRequestDto.getValue();
+        if (currentValue.compareTo(requestValue) <= 0) {
+            return "Not enough money on balance for a transaction";
+        }
+        balance.setValue(currentValue.subtract(requestValue));
+        balanceService.save(balance);
+        return requestValue + " " + balance.getCurrency()
+                + " were debited from the balance of the user with id " + id;
     }
 }

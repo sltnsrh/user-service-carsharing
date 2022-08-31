@@ -129,4 +129,13 @@ public class UserController {
     ) {
         return new ResponseEntity<>(userService.toBalance(id, requestDto), HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}/from-balance")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<String> fromBalance(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody BalanceRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(userService.fromBalance(id, requestDto), HttpStatus.OK);
+    }
 }
