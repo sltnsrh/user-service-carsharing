@@ -1,23 +1,18 @@
 package com.intern.carsharing.service.impl;
 
-import com.intern.carsharing.exception.LimitedPermissionException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.Balance;
-import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
+import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
-import java.util.Objects;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final StatusService statusService;
     private final BalanceService balanceService;
+    private final PermissionService permissionService;
 
     @Override
     public User findByEmail(String email) {
@@ -40,26 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
-        checkPermission(id);
+        permissionService.check(id);
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
-    }
-
-    private void checkPermission(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!authentication.getPrincipal().toString().equals("anonymousUser")) {
-            User client = (User) authentication.getDetails();
-            if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
-                throw new LimitedPermissionException(
-                        "Users have access only to their own accounts."
-                );
-            }
-        }
-    }
-
-    private boolean containsRoleAdmin(Set<Role> roles) {
-        return roles.stream()
-                .anyMatch(role -> role.getRoleName().name().equals("ADMIN"));
     }
 
     @Override
@@ -98,12 +77,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String toBalance(Long id, BalanceRequestDto balanceRequestDto) {
-        checkPermission(id);
+        permissionService.check(id);
         Balance balance = balanceService.findByUserId(id);
         balance.setValue(balance.getValue().add(balanceRequestDto.getValue()));
         balanceService.save(balance);
         return balanceRequestDto.getValue() + " " + balance.getCurrency()
             + " has been credited to the balance of the user with id " + id;
     }
-
 }
