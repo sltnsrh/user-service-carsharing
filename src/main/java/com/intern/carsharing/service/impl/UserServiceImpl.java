@@ -45,15 +45,15 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update(Long id, UserUpdateRequestDto updateDto) {
         User user = get(id);
-        String newEmail = updateDto.getEmail();
-        User userWithSameNewEmail = findByEmail(newEmail);
-        checkIfUserWithNewEmailExists(userWithSameNewEmail, newEmail, id);
+        checkIfUserWithNewEmailExists(id, updateDto);
         setUpdates(user, updateDto);
         return userRepository.save(user);
     }
 
-    private void checkIfUserWithNewEmailExists(User user, String newEmail, Long id) {
-        if (user != null && !user.getId().equals(id)) {
+    private void checkIfUserWithNewEmailExists(Long id, UserUpdateRequestDto updateDto) {
+        String newEmail = updateDto.getEmail();
+        User userWithSameNewEmail = findByEmail(newEmail);
+        if (userWithSameNewEmail != null && !userWithSameNewEmail.getId().equals(id)) {
             throw new UserAlreadyExistException("User with email " + newEmail
                     + " already exists");
         }
