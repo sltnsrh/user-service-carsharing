@@ -78,4 +78,30 @@ class UserServiceImplTest {
         Assertions.assertNotNull(actual);
     }
 
+    @Test
+    void fromBalanceEnoughMoneyCase() {
+        BalanceRequestDto balanceRequestDto = new BalanceRequestDto();
+        balanceRequestDto.setValue(BigDecimal.valueOf(100));
+        Balance balance = new Balance();
+        balance.setValue(BigDecimal.valueOf(100));
+        balance.setCurrency("UAH");
+        Mockito.when(balanceService.findByUserId(1L)).thenReturn(balance);
+        Mockito.when(balanceService.save(any(Balance.class))).thenReturn(null);
+        String actual = userService.fromBalance(1L, balanceRequestDto);
+        Assertions.assertEquals("100 UAH were debited from the balance of the user with id 1",
+                actual);
+    }
+
+    @Test
+    void fromBalanceNotEnoughMoney() {
+        BalanceRequestDto balanceRequestDto = new BalanceRequestDto();
+        balanceRequestDto.setValue(BigDecimal.valueOf(100));
+        Balance balance = new Balance();
+        balance.setValue(BigDecimal.valueOf(99));
+        balance.setCurrency("UAH");
+        Mockito.when(balanceService.findByUserId(1L)).thenReturn(balance);
+        String actual = userService.fromBalance(1L, balanceRequestDto);
+        Assertions.assertEquals("Not enough money on balance for a transaction",
+                actual);
+    }
 }
