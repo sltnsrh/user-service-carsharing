@@ -5,7 +5,7 @@ import java.util.Set;
 import lombok.Data;
 
 @Data
-public class ResponseUserDto {
+public class UserResponseDto {
     @ApiModelProperty(example = "1")
     private Long id;
     @ApiModelProperty(example = "bob@gmail.com")
@@ -22,6 +22,6 @@ public class ResponseUserDto {
     private String driverLicence;
     @ApiModelProperty(example = "[\"USER\"]")
     private Set<String> roles;
-    @ApiModelProperty(example = "ENABLE")
+    @ApiModelProperty(example = "ACTIVE")
     private String status;
 }

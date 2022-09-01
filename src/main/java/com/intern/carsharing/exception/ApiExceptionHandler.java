@@ -42,9 +42,12 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiExceptionObject, badRequest);
     }
 
-    @ExceptionHandler(value = {UsernameNotFoundException.class})
+    @ExceptionHandler(value = {
+            UsernameNotFoundException.class,
+            ConfirmationTokenInvalidException.class
+    })
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
-            UsernameNotFoundException e
+            RuntimeException e
     ) {
         HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
@@ -66,15 +69,28 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiExceptionObject, notFound);
     }
 
-    @ExceptionHandler(value = {ConfirmationTokenInvalidException.class})
-    public ResponseEntity<ApiExceptionObject> handleConfirmationTokenInvalidException(
-            ConfirmationTokenInvalidException e) {
-        HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
+    @ExceptionHandler(value = {IllegalArgumentException.class})
+    public ResponseEntity<ApiExceptionObject> handleIllegalArgumentException(
+            IllegalArgumentException e) {
+        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
-                unauthorized,
+                badRequest,
                 ZonedDateTime.now().toString()
         );
-        return new ResponseEntity<>(apiExceptionObject, unauthorized);
+        return new ResponseEntity<>(apiExceptionObject, badRequest);
+    }
+
+    @ExceptionHandler(value = {LimitedPermissionException.class})
+    public ResponseEntity<ApiExceptionObject> handleLimitedPermissionException(
+            LimitedPermissionException e
+    ) {
+        HttpStatus forbidden = HttpStatus.FORBIDDEN;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                forbidden,
+                ZonedDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, forbidden);
     }
 }

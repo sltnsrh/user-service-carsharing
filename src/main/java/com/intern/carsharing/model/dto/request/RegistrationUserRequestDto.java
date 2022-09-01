@@ -18,7 +18,7 @@ import lombok.Data;
 )
 
 @Data
-public class RegistrationRequestUserDto {
+public class RegistrationUserRequestDto {
     @ApiModelProperty(example = "bob@gmail.com", required = true)
     @ValidEmail
     private String email;

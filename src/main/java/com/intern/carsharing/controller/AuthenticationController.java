@@ -1,7 +1,7 @@
 package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
+import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +29,7 @@ public class AuthenticationController {
     @Operation(
             summary = "Registration a new user",
             description = "Allows to register a new user. "
-                    + "As response user gets a message with confirmation email url.",
+                    + "As response user gets a message that confirmation email was sent.",
             tags = {"Authentication"},
             responses = {
                     @ApiResponse(responseCode = "201", description = "Created"),
@@ -40,7 +40,7 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
     public ResponseEntity<Object> register(
-            @Valid @RequestBody RegistrationRequestUserDto requestUserDto
+            @Valid @RequestBody RegistrationUserRequestDto requestUserDto
     ) {
         return new ResponseEntity<>(authService.register(requestUserDto), HttpStatus.CREATED);
     }
@@ -68,7 +68,7 @@ public class AuthenticationController {
     @Operation(
             summary = "User email confirmation",
             description = "Allows to confirm user email. "
-                    + "As response user gets message that confirmation email was sent.",
+                    + "As response user gets message that email was successfully confirmed.",
             tags = {"Authentication"},
             responses = {
                     @ApiResponse(responseCode = "200", description = "Ok"),

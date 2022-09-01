@@ -1,7 +1,9 @@
 package com.intern.carsharing.controller;
 
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.UserResponseDto;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +16,9 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,13 +35,14 @@ public class UserController {
 
     @Operation(
             summary = "Get a user info",
-            description = "Allows to get a user info.",
+            description = "Allows to get a user info. Admin has access to all accounts, "
+                    + "but users can get info only about themselves.",
             tags = {"Users"},
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "Ok",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
+                                    schema = @Schema(implementation = UserResponseDto.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "404", description = "Not Found"),
@@ -45,8 +50,9 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden")
             }
     )
+    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> getUserInfo(
+    public ResponseEntity<UserResponseDto> getUserInfo(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id
     ) {
@@ -55,13 +61,14 @@ public class UserController {
 
     @Operation(
             summary = "Update a user info",
-            description = "Allows to update a info about user.",
+            description = "Allows to update a info about user. Admin has access to all accounts, "
+                    + "but users can update info only about themselves.",
             tags = {"Users"},
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "Ok",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseUserDto.class))
+                                    schema = @Schema(implementation = UserResponseDto.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -70,14 +77,44 @@ public class UserController {
                     @ApiResponse(responseCode = "405", description = "Method Not Allowed"),
                     @ApiResponse(responseCode = "409", description = "Conflict")
             })
+    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseUserDto> update(
+    public ResponseEntity<UserResponseDto> update(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
-            @Valid @RequestBody RequestUserUpdateDto requestDto
+            @Valid @RequestBody UserUpdateRequestDto requestDto
     ) {
         return new ResponseEntity<>(
                 userMapper.toDto((userService.update(id, requestDto))),
+                HttpStatus.OK
+        );
+    }
+
+    @Operation(
+            summary = "Change user status",
+            description = "Allows to update a user status. Permission only for Admin",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Ok",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = UserResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserResponseDto> changeStatus(
+            @Parameter(description = "User id", example = "1")
+            @PathVariable("id") Long id,
+            @Valid @RequestBody ChangeStatusRequestDto requestDto
+    ) {
+        StatusType statusType = StatusType.valueOf(requestDto.getStatus().toUpperCase());
+        return new ResponseEntity<>(
+                userMapper.toDto(userService.changeStatus(id, statusType)),
                 HttpStatus.OK
         );
     }

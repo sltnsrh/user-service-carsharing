@@ -5,7 +5,7 @@ import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
+import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final ConfirmationTokenService confirmationTokenService;
 
     @Override
-    public String register(RegistrationRequestUserDto requestUserDto) {
+    public String register(RegistrationUserRequestDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
         if (user != null) {
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
             return getTokenExpiredMessage(email);
         }
         confirmationTokenService.setConfirmDate(confirmationToken);
-        userService.changeStatus(confirmationToken.getUser(), StatusType.ACTIVE);
+        userService.changeStatus(confirmationToken.getUser().getId(), StatusType.ACTIVE);
         return "Your email address: " + email + " was confirmed successfully!";
     }
 
@@ -110,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
                 + "localhost:8080/confirm?token=" + token;
     }
 
-    private User getUserFromDtoWithEncodedPassword(RegistrationRequestUserDto dto) {
+    private User getUserFromDtoWithEncodedPassword(RegistrationUserRequestDto dto) {
         User user = userMapper.toModel(dto);
         user.setPassword(encoder.encode(user.getPassword()));
         return userService.save(user);

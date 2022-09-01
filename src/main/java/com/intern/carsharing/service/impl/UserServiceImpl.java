@@ -1,14 +1,20 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.LimitedPermissionException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
+import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
-import com.intern.carsharing.model.dto.request.RequestUserUpdateDto;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
+import java.util.Objects;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +36,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
+        checkPermission(id);
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
     }
 
     @Override
     @Transactional
-    public User update(Long id, RequestUserUpdateDto updateDto) {
+    public User update(Long id, UserUpdateRequestDto updateDto) {
         User user = get(id);
         String newEmail = updateDto.getEmail();
         User userWithSameNewEmail = findByEmail(newEmail);
@@ -50,16 +57,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User changeStatus(User user, StatusType statusType) {
+    public User changeStatus(Long id, StatusType statusType) {
+        User user = get(id);
         user.setStatus(statusService.findByStatusType(statusType));
         return save(user);
     }
 
-    private void setUpdates(User user, RequestUserUpdateDto updateDto) {
+    private void setUpdates(User user, UserUpdateRequestDto updateDto) {
         user.setEmail(updateDto.getEmail());
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());
         user.setAge(updateDto.getAge());
         user.setDriverLicence(updateDto.getDriverLicence());
+    }
+
+    private boolean containsRoleAdmin(Set<Role> roles) {
+        return roles.stream()
+                .anyMatch(role -> role.getRoleName().name().equals("ADMIN"));
+    }
+
+    private void checkPermission(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authentication.getPrincipal().toString().equals("anonymousUser")) {
+            User client = (User) authentication.getDetails();
+            if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
+                throw new LimitedPermissionException(
+                        "Users have access only to their own accounts."
+                );
+            }
+        }
     }
 }

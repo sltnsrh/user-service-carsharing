@@ -14,9 +14,9 @@ import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationRequestUserDto;
+import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.ResponseUserDto;
+import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
@@ -62,7 +62,7 @@ class AuthenticationControllerTest {
 
     @Test
     void registerWithValidData() throws Exception {
-        RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
         requestUserDto.setRepeatPassword("password");
@@ -71,16 +71,16 @@ class AuthenticationControllerTest {
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
 
-        ResponseUserDto responseUserDto = new ResponseUserDto();
-        responseUserDto.setId(1L);
-        responseUserDto.setEmail("bob@gmail.com");
-        responseUserDto.setPassword("password");
-        responseUserDto.setFirstName("Bob");
-        responseUserDto.setLastName("Alister");
-        responseUserDto.setAge(21);
-        responseUserDto.setDriverLicence("DFG23K34H");
-        responseUserDto.setRoles(Set.of("ADMIN"));
-        responseUserDto.setStatus("ACTIVE");
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setId(1L);
+        userResponseDto.setEmail("bob@gmail.com");
+        userResponseDto.setPassword("password");
+        userResponseDto.setFirstName("Bob");
+        userResponseDto.setLastName("Alister");
+        userResponseDto.setAge(21);
+        userResponseDto.setDriverLicence("DFG23K34H");
+        userResponseDto.setRoles(Set.of("ADMIN"));
+        userResponseDto.setStatus("ACTIVE");
 
         User user = new User();
         user.setId(1L);
@@ -109,7 +109,7 @@ class AuthenticationControllerTest {
 
     @Test
     void registerWithNotMatchPassword() throws Exception {
-        RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("passwor");
         requestUserDto.setRepeatPassword("password");
@@ -129,7 +129,7 @@ class AuthenticationControllerTest {
 
     @Test
     void registerExistUser() throws Exception {
-        RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
         requestUserDto.setRepeatPassword("password");
@@ -153,7 +153,7 @@ class AuthenticationControllerTest {
 
     @Test
     void registerWithAgeLessThan21() throws Exception {
-        RegistrationRequestUserDto requestUserDto = new RegistrationRequestUserDto();
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
         requestUserDto.setEmail("bob@gmail.com");
         requestUserDto.setPassword("password");
         requestUserDto.setRepeatPassword("password");
@@ -284,6 +284,7 @@ class AuthenticationControllerTest {
     @Test
     void confirmEmailWithValidToken() throws Exception {
         User user = new User();
+        user.setId(1L);
         user.setEmail("bob@gmail.com");
         ConfirmationToken confirmationToken = new ConfirmationToken();
         confirmationToken.setUser(user);
@@ -294,6 +295,7 @@ class AuthenticationControllerTest {
         Mockito.when(confirmationTokenRepository.findByToken("confirmationtoken"))
                 .thenReturn(Optional.of(confirmationToken));
         Mockito.when(confirmationTokenRepository.save(any())).thenReturn(null);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(statusRepository.findByStatusType(StatusType.ACTIVE))
                 .thenReturn(new Status(1L, StatusType.ACTIVE));
         Mockito.when(userRepository.save(any(User.class))).thenReturn(null);
