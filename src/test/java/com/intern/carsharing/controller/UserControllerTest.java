@@ -302,7 +302,7 @@ class UserControllerTest {
         Mockito.when(balanceRepository.findByUserId(userFromDb.getId()))
                 .thenReturn(Optional.of(balance));
         Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.ofNullable(userFromDb));
+                .thenReturn(Optional.of(userFromDb));
         String jwt = jwtTokenProvider
                 .createToken(userFromDb.getEmail(), userFromDb.getRoles());
         mockMvc.perform(patch("/users/{id}/to-balance", userFromDb.getId())
@@ -310,5 +310,58 @@ class UserControllerTest {
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void fromBalanceEnoughMoneyCase() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        Balance balance = new Balance();
+        balance.setValue(BigDecimal.valueOf(100));
+        balance.setCurrency("UAH");
+        userFromDb.setRoles(Set.of(new Role(2L, RoleName.ADMIN)));
+        Mockito.when(balanceRepository.findByUserId(userFromDb.getId()))
+                .thenReturn(Optional.of(balance));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        Mockito.when(balanceRepository.save(any(Balance.class))).thenReturn(null);
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        MvcResult mvcResult = mockMvc.perform(patch("/users/{id}/from-balance", 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andReturn();
+        String actual = mvcResult
+                .getResponse().getContentAsString();
+        Assertions.assertEquals("100 UAH were debited from the balance of the user with id 1",
+                actual);
+    }
+
+    @Test
+    void fromBalanceNotEnoughMoneyCase() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        Balance balance = new Balance();
+        balance.setValue(BigDecimal.valueOf(99));
+        balance.setCurrency("UAH");
+        userFromDb.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
+        Mockito.when(balanceRepository.findByUserId(userFromDb.getId()))
+                .thenReturn(Optional.of(balance));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.of(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        MvcResult mvcResult = mockMvc.perform(patch("/users/{id}/from-balance", 1)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andReturn();
+        String actual = mvcResult
+                .getResponse().getContentAsString();
+        Assertions.assertEquals("Not enough money on balance for a transaction",
+                actual);
     }
 }
