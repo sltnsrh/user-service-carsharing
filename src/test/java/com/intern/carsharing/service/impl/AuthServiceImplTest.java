@@ -3,17 +3,22 @@ package com.intern.carsharing.service.impl;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
+import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.ConfirmationTokenService;
+import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
@@ -46,6 +51,10 @@ class AuthServiceImplTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private ConfirmationTokenService confirmationTokenService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Test
     void registerWithValidData() {
@@ -99,6 +108,7 @@ class AuthServiceImplTest {
     @Test
     void loginWithValidData() {
         User user = new User();
+        user.setId(1L);
         user.setEmail("bob@gmail.com");
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
@@ -106,14 +116,19 @@ class AuthServiceImplTest {
                 .thenReturn("token");
         Mockito.when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 "bob@gmail.com", "password"))).thenReturn(null);
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenService.create(user.getId())).thenReturn(refreshToken);
 
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("password");
 
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
-        Assertions.assertEquals(loginResponseDto.getEmail(), "bob@gmail.com");
-        Assertions.assertEquals(loginResponseDto.getToken(), "token");
+        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertEquals("token", loginResponseDto.getToken());
+        Assertions.assertEquals("refreshtoken", loginResponseDto.getRefreshToken());
+
     }
 
     @Test
@@ -210,5 +225,42 @@ class AuthServiceImplTest {
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
         assertThrows(ConfirmationTokenInvalidException.class,
                 () -> authService.resendEmail("bob@gmail.com"));
+    }
+
+    @Test
+    void refreshAuthTokenWithValidRefreshToken() {
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
+        refreshToken.setToken("refreshtoken");
+
+        Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
+        Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getRoles()))
+                .thenReturn("newauthtoken");
+        LoginResponseDto actual = authService.refreshToken(requestDto);
+        Assertions.assertEquals(user.getEmail(), actual.getEmail());
+        Assertions.assertEquals("newauthtoken", actual.getToken());
+        Assertions.assertEquals("refreshtoken", actual.getRefreshToken());
+    }
+
+    @Test
+    void refreshAuthTokenWithExpiredRefreshToken() {
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(new User());
+        refreshToken.setExpiredAt(LocalDateTime.now().minusMinutes(15));
+
+        Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
+        Assertions.assertThrows(RefreshTokenException.class,
+                () -> authService.refreshToken(requestDto));
     }
 }

@@ -1,7 +1,6 @@
 package com.intern.carsharing.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,16 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
+import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -50,6 +52,8 @@ class AuthenticationControllerTest {
     private ConfirmationTokenRepository confirmationTokenRepository;
     @MockBean
     private StatusRepository statusRepository;
+    @MockBean
+    private RefreshTokenRepository refreshTokenRepository;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -189,11 +193,14 @@ class AuthenticationControllerTest {
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
         userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
 
-        Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
+        Mockito.when(userRepository.findUserByEmail(any()))
                 .thenReturn(Optional.of(userFromDb));
+        Mockito.when((userRepository.findById(1L))).thenReturn(Optional.of(userFromDb));
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
 
         MvcResult mvcResult = mockMvc.perform(post("/login")
-                .with(user("bob@gmail.com").password("password").roles("ADMIN"))
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
@@ -204,6 +211,7 @@ class AuthenticationControllerTest {
 
         Assertions.assertEquals(loginRequestDto.getEmail(), loginResponseDto.getEmail());
         Assertions.assertFalse(loginResponseDto.getToken().isBlank());
+        Assertions.assertFalse(loginResponseDto.getRefreshToken().isBlank());
     }
 
     @Test
@@ -227,7 +235,6 @@ class AuthenticationControllerTest {
                 .thenReturn(Optional.of(userFromDb));
 
         MvcResult mvcResult = mockMvc.perform(post("/login")
-                        .with(user("bob@gmail.com").password("passwor").roles("ADMIN"))
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isUnauthorized())
@@ -316,5 +323,44 @@ class AuthenticationControllerTest {
         mockMvc.perform(get("/resend?email=bob@gmail.com"))
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    void refreshTokenWithValidRefreshToken() throws Exception {
+        User user = new User();
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.findByToken("refreshtoken"))
+                .thenReturn(Optional.of(refreshToken));
+
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void refreshTokenWithExpiredRefreshToken() throws Exception {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(new User());
+        refreshToken.setExpiredAt(LocalDateTime.now().minusMinutes(15));
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenRepository.findByToken("refreshtoken"))
+                .thenReturn(Optional.of(refreshToken));
+
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
+        requestDto.setToken("refreshtoken");
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isForbidden());
+        Mockito.verify(refreshTokenRepository).delete(any(RefreshToken.class));
     }
 }

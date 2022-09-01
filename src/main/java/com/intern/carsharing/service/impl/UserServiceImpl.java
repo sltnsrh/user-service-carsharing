@@ -41,6 +41,23 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("Can't find user with id: " + id));
     }
 
+    private void checkPermission(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authentication.getPrincipal().toString().equals("anonymousUser")) {
+            User client = (User) authentication.getDetails();
+            if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
+                throw new LimitedPermissionException(
+                        "Users have access only to their own accounts."
+                );
+            }
+        }
+    }
+
+    private boolean containsRoleAdmin(Set<Role> roles) {
+        return roles.stream()
+                .anyMatch(role -> role.getRoleName().name().equals("ADMIN"));
+    }
+
     @Override
     @Transactional
     public User update(Long id, UserUpdateRequestDto updateDto) {
@@ -55,14 +72,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    @Override
-    @Transactional
-    public User changeStatus(Long id, StatusType statusType) {
-        User user = get(id);
-        user.setStatus(statusService.findByStatusType(statusType));
-        return save(user);
-    }
-
     private void setUpdates(User user, UserUpdateRequestDto updateDto) {
         user.setEmail(updateDto.getEmail());
         user.setFirstName(updateDto.getFirstName());
@@ -71,20 +80,11 @@ public class UserServiceImpl implements UserService {
         user.setDriverLicence(updateDto.getDriverLicence());
     }
 
-    private boolean containsRoleAdmin(Set<Role> roles) {
-        return roles.stream()
-                .anyMatch(role -> role.getRoleName().name().equals("ADMIN"));
-    }
-
-    private void checkPermission(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!authentication.getPrincipal().toString().equals("anonymousUser")) {
-            User client = (User) authentication.getDetails();
-            if (!Objects.equals(client.getId(), id) && !containsRoleAdmin(client.getRoles())) {
-                throw new LimitedPermissionException(
-                        "Users have access only to their own accounts."
-                );
-            }
-        }
+    @Override
+    @Transactional
+    public User changeStatus(Long id, StatusType statusType) {
+        User user = get(id);
+        user.setStatus(statusService.findByStatusType(statusType));
+        return save(user);
     }
 }

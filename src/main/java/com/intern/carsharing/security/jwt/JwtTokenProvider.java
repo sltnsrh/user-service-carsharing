@@ -36,7 +36,7 @@ public class JwtTokenProvider {
     private final UserService userService;
     @Value("${jwt.token.secret}")
     private String secret;
-    @Value("${jwt.token.expired}")
+    @Value("${jwt.token.expired.ms}")
     private long expirationPeriod;
 
     @PostConstruct

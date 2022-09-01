@@ -15,4 +15,6 @@ public class LoginResponseDto {
             + "zIjpbIlVTRVIiXSwiaWF0IjoxNjYwNzY0MTgyLCJleHAiOjE2NjA3NjQ1NDJ9.r8kASRvksi3Ev"
             + "-BS9rQ4L56l_iI7kwIDIy27OIKYp-g")
     private String token;
+    @ApiModelProperty(example = "a9dae4ce-3611-42a8-92ed-5d1eaf72fe09")
+    private String refreshToken;
 }

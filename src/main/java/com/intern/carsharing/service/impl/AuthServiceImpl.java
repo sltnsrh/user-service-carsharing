@@ -1,19 +1,26 @@
 package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
+import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.ConfirmationToken;
+import com.intern.carsharing.model.RefreshToken;
+import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.ConfirmationTokenService;
+import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -31,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder encoder;
     private final UserMapper userMapper;
     private final ConfirmationTokenService confirmationTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public String register(RegistrationUserRequestDto requestUserDto) {
@@ -44,16 +52,44 @@ public class AuthServiceImpl implements AuthService {
         return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
+    private User getUserFromDtoWithEncodedPassword(RegistrationUserRequestDto dto) {
+        User user = userMapper.toModel(dto);
+        user.setPassword(encoder.encode(user.getPassword()));
+        return userService.save(user);
+    }
+
+    private String getRegistrationResponseMessage(String token) {
+        return "Thanks for the registration!"
+                + System.lineSeparator()
+                + "The confirmation mail was sent on your email. "
+                + System.lineSeparator()
+                + "Please, confirm your email address to activate your account."
+                + System.lineSeparator().repeat(2)
+                + "localhost:8080/confirm?token=" + token;
+    }
+
     @Override
     public LoginResponseDto login(LoginRequestDto requestDto) {
-        User user = userService.findByEmail(requestDto.getEmail());
-        if (user == null) {
-            throw new UsernameNotFoundException(
-                    "User with email: " + requestDto.getEmail() + " doesn't exist"
-            );
-        }
+        String emailFromRequest = requestDto.getEmail();
+        User user = userService.findByEmail(emailFromRequest);
+        checkIfUserExists(user, emailFromRequest);
         String email = user.getEmail();
         String password = requestDto.getPassword();
+        authenticate(email, password);
+        String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
+        RefreshToken refreshToken = refreshTokenService.create(user.getId());
+        return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
+    }
+
+    private void checkIfUserExists(User user, String emailFromRequest) {
+        if (user == null) {
+            throw new UsernameNotFoundException(
+                    "User with email: " + emailFromRequest + " doesn't exist"
+            );
+        }
+    }
+
+    private void authenticate(String email, String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
@@ -61,8 +97,6 @@ public class AuthServiceImpl implements AuthService {
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Wrong password, try again");
         }
-        String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
-        return new LoginResponseDto(email, jwtToken);
     }
 
     @Override
@@ -85,6 +119,14 @@ public class AuthServiceImpl implements AuthService {
         return "Your email address: " + email + " was confirmed successfully!";
     }
 
+    private String getTokenExpiredMessage(String email) {
+        return "Confirmation token was expired."
+                + System.lineSeparator()
+                + "Follow the link to get a new verification mail: "
+                + System.lineSeparator()
+                + "localhost:8080/resend?email=" + email;
+    }
+
     @Override
     public String resendEmail(String email) {
         User user = userService.findByEmail(email);
@@ -100,27 +142,21 @@ public class AuthServiceImpl implements AuthService {
         return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
-    private String getRegistrationResponseMessage(String token) {
-        return "Thanks for the registration!"
-                + System.lineSeparator()
-                + "The confirmation mail was sent on your email. "
-                + System.lineSeparator()
-                + "Please, confirm your email address to activate your account."
-                + System.lineSeparator().repeat(2)
-                + "localhost:8080/confirm?token=" + token;
+    @Override
+    public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
+        RefreshToken refreshToken = resolveRefreshToken(requestDto.getToken());
+        String email = refreshToken.getUser().getEmail();
+        Set<Role> roles = refreshToken.getUser().getRoles();
+        String jwtToken = jwtTokenProvider.createToken(email, roles);
+        return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
     }
 
-    private User getUserFromDtoWithEncodedPassword(RegistrationUserRequestDto dto) {
-        User user = userMapper.toModel(dto);
-        user.setPassword(encoder.encode(user.getPassword()));
-        return userService.save(user);
-    }
-
-    private String getTokenExpiredMessage(String email) {
-        return "Confirmation token was expired."
-                + System.lineSeparator()
-                + "Follow the link to get a new verification mail: "
-                + System.lineSeparator()
-                + "localhost:8080/resend?email=" + email;
+    private RefreshToken resolveRefreshToken(String token) {
+        RefreshToken refreshToken = refreshTokenService.getByToken(token);
+        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now(ZoneId.systemDefault()))) {
+            refreshTokenService.delete(refreshToken);
+            throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
+        }
+        return refreshToken;
     }
 }

@@ -1,6 +1,7 @@
 package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.service.AuthService;
@@ -95,5 +96,24 @@ public class AuthenticationController {
     @GetMapping("/resend")
     public ResponseEntity<Object> resend(@RequestParam String email) {
         return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Refresh user authentication token",
+            description = "Allows to refresh user authentication token. "
+                    + "As response user gets json body with username, "
+                    + "new authentication token and refresh token.",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden")
+            }
+    )
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResponseDto> refreshToken(
+            @RequestBody RefreshTokenRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(authService.refreshToken(requestDto), HttpStatus.OK);
     }
 }
