@@ -121,6 +121,20 @@ public class UserController {
         );
     }
 
+    @Operation(
+            summary = "Credit user balance",
+            description = "Allows to put money on a user balance. Users with USER and CAR_OWNER "
+                    + "roles can charge only their own balances. "
+                    + "Users with ADMIN role can charge every existing balance",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
     @PatchMapping("/{id}/to-balance")
     @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     public ResponseEntity<String> toBalance(
@@ -129,6 +143,19 @@ public class UserController {
     ) {
         return new ResponseEntity<>(userService.toBalance(id, requestDto), HttpStatus.OK);
     }
+
+    @Operation(
+            summary = "Debit user balance",
+            description = "Allows to get money from a user balance. "
+                    + "Users with ADMIN role can get from every existing balance",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
 
     @PatchMapping("/{id}/from-balance")
     @PreAuthorize("hasAuthority('ADMIN')")
