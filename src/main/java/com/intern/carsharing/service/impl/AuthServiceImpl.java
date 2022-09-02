@@ -152,8 +152,17 @@ public class AuthServiceImpl implements AuthService {
                     "Your email " + email + " was already confirmed."
             );
         }
+        checkAndDeleteOldConfirmationTokens(user);
         ConfirmationToken confirmationToken = confirmationTokenService.create(user);
         return getRegistrationResponseMessage(confirmationToken.getToken());
+    }
+
+    private void checkAndDeleteOldConfirmationTokens(User user) {
+        List<ConfirmationToken> confirmationTokenList =
+                confirmationTokenService.findAllByUser(user);
+        if (confirmationTokenList != null) {
+            confirmationTokenList.forEach(confirmationTokenService::delete);
+        }
     }
 
     @Override

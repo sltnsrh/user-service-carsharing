@@ -5,6 +5,7 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,5 +42,15 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
     public void setConfirmDate(ConfirmationToken confirmationToken) {
         confirmationToken.setConfirmedAt(LocalDateTime.now());
         confirmationTokenRepository.save(confirmationToken);
+    }
+
+    @Override
+    public List<ConfirmationToken> findAllByUser(User user) {
+        return confirmationTokenRepository.findAllByUser(user).orElse(null);
+    }
+
+    @Override
+    public void delete(ConfirmationToken confirmationToken) {
+        confirmationTokenRepository.delete(confirmationToken);
     }
 }
