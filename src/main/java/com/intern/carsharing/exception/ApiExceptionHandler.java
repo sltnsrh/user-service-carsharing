@@ -42,12 +42,9 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiExceptionObject, badRequest);
     }
 
-    @ExceptionHandler(value = {
-            UsernameNotFoundException.class,
-            ConfirmationTokenInvalidException.class
-    })
+    @ExceptionHandler(value = {UsernameNotFoundException.class})
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
-            RuntimeException e
+            UsernameNotFoundException e
     ) {
         HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
@@ -95,5 +92,18 @@ public class ApiExceptionHandler {
                 ZonedDateTime.now().toString()
         );
         return new ResponseEntity<>(apiExceptionObject, forbidden);
+    }
+
+    @ExceptionHandler(value = {ConfirmationTokenInvalidException.class})
+    public ResponseEntity<ApiExceptionObject> handleConfirmationTokenInvalidException(
+            ConfirmationTokenInvalidException e
+    ) {
+        HttpStatus accepted = HttpStatus.ACCEPTED;
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(),
+                accepted,
+                ZonedDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, accepted);
     }
 }
