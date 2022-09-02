@@ -28,10 +28,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public RefreshToken create(Long id) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(userService.get(id));
-        refreshToken.setToken(UUID.randomUUID().toString());
-        while (tokenRepository.findByToken(refreshToken.getToken()).isPresent()) {
-            refreshToken.setToken(UUID.randomUUID().toString());
+        String token = UUID.randomUUID().toString();
+        while (tokenRepository.findByToken(token).isPresent()) {
+            token = UUID.randomUUID().toString();
         }
+        refreshToken.setToken(token);
         refreshToken.setExpiredAt(LocalDateTime.now(ZoneId.systemDefault())
                 .plusMinutes(expirationPeriod));
         return tokenRepository.save(refreshToken);
