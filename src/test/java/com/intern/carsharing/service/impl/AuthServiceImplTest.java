@@ -243,7 +243,7 @@ class AuthServiceImplTest {
         refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
         refreshToken.setToken("refreshtoken");
 
-        Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
+        Mockito.when(refreshTokenService.findByToken("refreshtoken")).thenReturn(refreshToken);
         Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getRoles()))
                 .thenReturn("newauthtoken");
         LoginResponseDto actual = authService.refreshToken(requestDto);
@@ -261,7 +261,7 @@ class AuthServiceImplTest {
         refreshToken.setUser(new User());
         refreshToken.setExpiredAt(LocalDateTime.now().minusMinutes(15));
 
-        Mockito.when(refreshTokenService.getByToken("refreshtoken")).thenReturn(refreshToken);
+        Mockito.when(refreshTokenService.findByToken("refreshtoken")).thenReturn(refreshToken);
         Assertions.assertThrows(RefreshTokenException.class,
                 () -> authService.refreshToken(requestDto));
     }

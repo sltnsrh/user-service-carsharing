@@ -21,6 +21,7 @@ import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -82,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
         String password = requestDto.getPassword();
         authenticate(email, password);
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
+        checkAndDeleteOldRefreshTokens(user);
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
         return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
     }
@@ -101,6 +103,13 @@ public class AuthServiceImpl implements AuthService {
             );
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Wrong password, try again");
+        }
+    }
+
+    private void checkAndDeleteOldRefreshTokens(User user) {
+        List<RefreshToken> refreshTokenList = refreshTokenService.findByUser(user);
+        if (refreshTokenList != null) {
+            refreshTokenList.forEach(refreshTokenService::delete);
         }
     }
 
@@ -158,7 +167,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private RefreshToken resolveRefreshToken(String token) {
-        RefreshToken refreshToken = refreshTokenService.getByToken(token);
+        RefreshToken refreshToken = refreshTokenService.findByToken(token);
         if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now(ZoneId.systemDefault()))) {
             refreshTokenService.delete(refreshToken);
             throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
