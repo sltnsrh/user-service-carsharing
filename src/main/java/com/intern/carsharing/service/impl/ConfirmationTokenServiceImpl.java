@@ -21,6 +21,9 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
     public ConfirmationToken create(User user) {
         ConfirmationToken confirmationToken = new ConfirmationToken();
         String token = UUID.randomUUID().toString();
+        while (confirmationTokenRepository.findByToken(token).isPresent()) {
+            token = UUID.randomUUID().toString();
+        }
         confirmationToken.setToken(token);
         confirmationToken.setUser(user);
         confirmationToken.setCreatedAt(LocalDateTime.now());
