@@ -75,6 +75,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String emailFromRequest = requestDto.getEmail();
         User user = userService.findByEmail(emailFromRequest);
@@ -114,6 +115,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public String confirm(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
         if (confirmationToken == null) {
@@ -142,6 +144,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public String resendEmail(String email) {
         User user = userService.findByEmail(email);
         if (user == null) {
@@ -166,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(noRollbackFor = RefreshTokenException.class)
+    @Transactional
     public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
         RefreshToken refreshToken = resolveRefreshToken(requestDto.getToken());
         String email = refreshToken.getUser().getEmail();
@@ -178,7 +181,6 @@ public class AuthServiceImpl implements AuthService {
     private RefreshToken resolveRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenService.findByToken(token);
         if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now(ZoneId.systemDefault()))) {
-            refreshTokenService.delete(refreshToken);
             throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
         }
         return refreshToken;

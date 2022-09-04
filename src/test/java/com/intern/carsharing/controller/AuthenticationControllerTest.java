@@ -366,6 +366,5 @@ class AuthenticationControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isForbidden());
-        Mockito.verify(refreshTokenRepository).delete(any(RefreshToken.class));
     }
 }
