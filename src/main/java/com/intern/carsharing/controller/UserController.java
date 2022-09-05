@@ -171,6 +171,18 @@ public class UserController {
         return new ResponseEntity<>(userService.fromBalance(id, requestDto), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Get trip user statistics",
+            description = "Allows to get statistics about user trips.",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
     @GetMapping("/{id}/statistics")
     public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
             @PathVariable("id") Long id,
