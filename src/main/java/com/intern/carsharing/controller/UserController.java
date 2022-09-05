@@ -1,6 +1,7 @@
 package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
+import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
@@ -25,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -215,5 +217,26 @@ public class UserController {
     public ResponseEntity<Object> getCarStatistics(@PathVariable("userId") Long userId,
                                                    @PathVariable("carId") Long carId) {
         return new ResponseEntity<>(userService.getCarStatistics(userId, carId), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Add a car to a rent",
+            description = "Allows car owners to add a new car to a rent.",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
+    @PostMapping("/{userId}/cars")
+    public ResponseEntity<Object> addCarToRent(
+            @PathVariable("userId") Long userId,
+            @RequestBody CarRegistrationRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(userService.addCarToRent(userId, requestDto), HttpStatus.OK);
     }
 }
