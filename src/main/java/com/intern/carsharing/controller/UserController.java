@@ -3,6 +3,7 @@ package com.intern.carsharing.controller;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.UserService;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
+import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -170,7 +172,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/statistics")
-    public ResponseEntity<String> getStatistics(
+    public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
             @PathVariable("id") Long id,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -179,6 +181,7 @@ public class UserController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate dateEnd
     ) {
-        return new ResponseEntity<>(userService.getStatistics(id, dateStart, dateEnd), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getTripStatistics(id, dateStart, dateEnd),
+                HttpStatus.OK);
     }
 }
