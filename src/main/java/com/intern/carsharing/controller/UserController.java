@@ -185,6 +185,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
 
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{id}/statistics")
     public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
             @PathVariable("id") Long id,
@@ -211,6 +212,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
 
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
     @GetMapping("/{userId}/cars/{carId}")
     public ResponseEntity<Object> getCarStatistics(@PathVariable("userId") Long userId,
                                                    @PathVariable("carId") Long carId) {
