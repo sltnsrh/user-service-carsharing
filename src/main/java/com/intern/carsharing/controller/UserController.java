@@ -2,6 +2,7 @@ package com.intern.carsharing.controller;
 
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
+import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
@@ -238,5 +239,28 @@ public class UserController {
             @RequestBody CarRegistrationRequestDto requestDto
     ) {
         return new ResponseEntity<>(userService.addCarToRent(userId, requestDto), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Change your car status",
+            description = "Allows car owners to change car status by car id.",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
+    @PatchMapping("/{userId}/cars/{carId}")
+    public ResponseEntity<Object> changeCarStatus(
+            @PathVariable("userId") Long userId,
+            @PathVariable("carId") Long carId,
+            @RequestBody ChangeCarStatusRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(userService.changeCarStatus(userId, carId, requestDto),
+                HttpStatus.OK);
     }
 }

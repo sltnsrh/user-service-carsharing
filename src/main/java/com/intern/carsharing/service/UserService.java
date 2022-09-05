@@ -3,6 +3,7 @@ package com.intern.carsharing.service;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
+import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
@@ -31,4 +32,6 @@ public interface UserService {
     String getCarStatistics(Long userId, Long carId);
 
     String addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
+
+    String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto);
 }

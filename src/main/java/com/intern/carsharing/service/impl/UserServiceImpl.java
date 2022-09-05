@@ -6,6 +6,7 @@ import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
+import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
@@ -121,5 +122,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public String addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
         return "Your car was added to a rent";
+    }
+
+    @Override
+    public String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto) {
+        return "Your car status was changed";
     }
 }
