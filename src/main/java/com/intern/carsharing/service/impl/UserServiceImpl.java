@@ -5,6 +5,7 @@ import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
+import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
@@ -115,5 +116,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public String getCarStatistics(Long userId, Long carId) {
         return "Your car statistics";
+    }
+
+    @Override
+    public String addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
+        return "Your car was added to a rent";
     }
 }
