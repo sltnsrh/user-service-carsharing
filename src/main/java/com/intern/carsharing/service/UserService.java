@@ -17,4 +17,6 @@ public interface UserService {
     User changeStatus(Long id, StatusType statusType);
 
     String toBalance(Long id, BalanceRequestDto balanceRequestDto);
+
+    String fromBalance(Long id, BalanceRequestDto balanceRequestDto);
 }
