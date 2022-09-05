@@ -209,6 +209,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
 
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
     @GetMapping("/{userId}/cars/{carId}")
     public ResponseEntity<Object> getCarStatistics(@PathVariable("userId") Long userId,
                                                    @PathVariable("carId") Long carId) {
