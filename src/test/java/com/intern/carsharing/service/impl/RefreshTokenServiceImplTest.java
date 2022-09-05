@@ -23,13 +23,13 @@ class RefreshTokenServiceImplTest {
     void getByTokenWithExistToken() {
         Mockito.when(refreshTokenRepository.findByToken("token"))
                 .thenReturn(Optional.of(new RefreshToken()));
-        RefreshToken actual = refreshTokenService.getByToken("token");
+        RefreshToken actual = refreshTokenService.findByToken("token");
         Assertions.assertNotNull(actual);
     }
 
     @Test
     void getByTokenWithNotExistToken() {
         Assertions.assertThrows(RefreshTokenException.class,
-                () -> refreshTokenService.getByToken("token"));
+                () -> refreshTokenService.findByToken("token"));
     }
 }
