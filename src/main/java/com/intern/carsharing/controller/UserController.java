@@ -13,8 +13,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Users", description = "Get and update user info")
@@ -164,5 +167,18 @@ public class UserController {
             @Valid @RequestBody BalanceRequestDto requestDto
     ) {
         return new ResponseEntity<>(userService.fromBalance(id, requestDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/statistics")
+    public ResponseEntity<String> getStatistics(
+            @PathVariable("id") Long id,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dateStart,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dateEnd
+    ) {
+        return new ResponseEntity<>(userService.getStatistics(id, dateStart, dateEnd), HttpStatus.OK);
     }
 }
