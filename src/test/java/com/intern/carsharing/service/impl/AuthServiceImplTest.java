@@ -1,6 +1,7 @@
 package com.intern.carsharing.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.RefreshTokenException;
@@ -15,8 +16,8 @@ import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
-import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
+import com.intern.carsharing.service.BalanceService;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
@@ -54,7 +55,7 @@ class AuthServiceImplTest {
     @Mock
     private RefreshTokenService refreshTokenService;
     @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    private BalanceService balanceService;
 
     @Test
     void registerWithValidData() {
@@ -99,6 +100,7 @@ class AuthServiceImplTest {
                 .thenReturn("$2a$10$hTlj76.onzhNMv/sh64KZ.NQl30XxR7lhbOIeAeP8hO7d6UTJyo/C");
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(null);
         Mockito.when(confirmationTokenService.create(userAfterSave)).thenReturn(confirmationToken);
+        Mockito.when(balanceService.createNewBalance(any(User.class))).thenReturn(null);
 
         String actual = authService.register(requestUserDto);
         Assertions.assertFalse(actual.isBlank());

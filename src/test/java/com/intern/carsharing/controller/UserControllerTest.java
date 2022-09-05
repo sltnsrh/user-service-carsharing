@@ -9,17 +9,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
+import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.BalanceRepository;
 import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
@@ -48,6 +52,8 @@ class UserControllerTest {
     private UserRepository userRepository;
     @MockBean
     private StatusRepository statusRepository;
+    @MockBean
+    private BalanceRepository balanceRepository;
     private MockMvc mockMvc;
     private User userFromDb;
 
@@ -284,6 +290,25 @@ class UserControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void toBalanceWithValidData() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        Balance balance = new Balance();
+        balance.setValue(BigDecimal.valueOf(0));
+        Mockito.when(balanceRepository.findByUserId(userFromDb.getId()))
+                .thenReturn(Optional.of(balance));
+        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
+                .thenReturn(Optional.ofNullable(userFromDb));
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        mockMvc.perform(patch("/users/{id}/to-balance", userFromDb.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
     }
 }

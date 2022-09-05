@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
+import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
@@ -20,6 +21,7 @@ import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.BalanceRepository;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.StatusRepository;
@@ -54,6 +56,8 @@ class AuthenticationControllerTest {
     private StatusRepository statusRepository;
     @MockBean
     private RefreshTokenRepository refreshTokenRepository;
+    @MockBean
+    private BalanceRepository balanceRepository;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -104,6 +108,7 @@ class AuthenticationControllerTest {
         confirmationToken.setToken("confirmationtoken");
         Mockito.when(confirmationTokenRepository.save(any(ConfirmationToken.class)))
                 .thenReturn(confirmationToken);
+        Mockito.when(balanceRepository.save(any(Balance.class))).thenReturn(null);
 
         mockMvc.perform(post("/registration")
                 .contentType("application/json")

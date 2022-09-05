@@ -1,5 +1,6 @@
 package com.intern.carsharing.controller;
 
+import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
@@ -107,6 +108,7 @@ public class UserController {
             })
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponseDto> changeStatus(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
@@ -117,5 +119,14 @@ public class UserController {
                 userMapper.toDto(userService.changeStatus(id, statusType)),
                 HttpStatus.OK
         );
+    }
+
+    @PatchMapping("/{id}/to-balance")
+    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
+    public ResponseEntity<String> toBalance(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody BalanceRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(userService.toBalance(id, requestDto), HttpStatus.OK);
     }
 }
