@@ -183,6 +183,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
 
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{id}/statistics")
     public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
             @PathVariable("id") Long id,
