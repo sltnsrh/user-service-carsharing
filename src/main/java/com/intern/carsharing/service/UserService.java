@@ -26,4 +26,6 @@ public interface UserService {
     List<StatisticsResponseDto> getTripStatistics(
             Long userId, LocalDate startDate, LocalDate endDate
     );
+
+    String getCarStatistics(Long userId, Long carId);
 }

@@ -111,4 +111,9 @@ public class UserServiceImpl implements UserService {
     ) {
         return List.of(new StatisticsResponseDto());
     }
+
+    @Override
+    public String getCarStatistics(Long userId, Long carId) {
+        return "Your car statistics";
+    }
 }

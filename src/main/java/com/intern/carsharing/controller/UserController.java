@@ -196,4 +196,22 @@ public class UserController {
         return new ResponseEntity<>(userService.getTripStatistics(id, dateStart, dateEnd),
                 HttpStatus.OK);
     }
+
+    @Operation(
+            summary = "Get car statistics",
+            description = "Allows to get car statistics for car owners",
+            tags = {"Users"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden"),
+                    @ApiResponse(responseCode = "404", description = "Not Found")
+            })
+
+    @GetMapping("/{userId}/cars/{carId}")
+    public ResponseEntity<Object> getCarStatistics(@PathVariable("userId") Long userId,
+                                                   @PathVariable("carId") Long carId) {
+        return new ResponseEntity<>(userService.getCarStatistics(userId, carId), HttpStatus.OK);
+    }
 }
