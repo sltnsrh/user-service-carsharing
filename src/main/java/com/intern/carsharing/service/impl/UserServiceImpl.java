@@ -6,6 +6,7 @@ import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -13,6 +14,8 @@ import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,5 +103,12 @@ public class UserServiceImpl implements UserService {
         balanceService.save(balance);
         return requestValue + " " + balance.getCurrency()
                 + " were debited from the balance of the user with id " + id;
+    }
+
+    @Override
+    public List<StatisticsResponseDto> getTripStatistics(
+            Long userId, LocalDate startDate, LocalDate endDate
+    ) {
+        return List.of(new StatisticsResponseDto());
     }
 }
