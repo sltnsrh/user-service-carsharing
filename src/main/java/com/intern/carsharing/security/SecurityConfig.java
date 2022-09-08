@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 .antMatchers(AUTH_WHITELIST).permitAll()
+                .antMatchers("/users/**").access(
+                        "'ACTIVE' == authentication.details.status.statusType.name"
+                )
                 .anyRequest().authenticated();
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
