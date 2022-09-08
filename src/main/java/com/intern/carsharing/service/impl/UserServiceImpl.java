@@ -111,21 +111,25 @@ public class UserServiceImpl implements UserService {
     public List<StatisticsResponseDto> getTripStatistics(
             Long userId, LocalDate startDate, LocalDate endDate
     ) {
+        permissionService.check(userId);
         return List.of(new StatisticsResponseDto());
     }
 
     @Override
     public String getCarStatistics(Long userId, Long carId) {
+        permissionService.check(userId);
         return "Your car statistics";
     }
 
     @Override
     public String addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
+        permissionService.check(userId);
         return "Your car was added to a rent";
     }
 
     @Override
     public String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto) {
+        permissionService.check(userId);
         return "Your car status was changed";
     }
 }
