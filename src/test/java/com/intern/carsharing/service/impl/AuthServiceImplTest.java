@@ -113,6 +113,7 @@ class AuthServiceImplTest {
         user.setId(1L);
         user.setEmail("bob@gmail.com");
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
+        user.setStatus(new Status(1L, StatusType.ACTIVE));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
         Mockito.when(jwtTokenProvider.createToken("bob@gmail.com", user.getRoles()))
                 .thenReturn("token");

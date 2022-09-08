@@ -152,7 +152,7 @@ class UserControllerTest {
     void getUserInfoWithEmptyToken() throws Exception {
         mockMvc.perform(get("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, ""))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
