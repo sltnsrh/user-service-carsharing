@@ -42,7 +42,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         try {
             filterChain.doFilter(servletRequest, servletResponse);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             setResponseException(servletResponse);
         }
     }
