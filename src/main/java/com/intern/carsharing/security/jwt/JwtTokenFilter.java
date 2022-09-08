@@ -40,7 +40,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 return;
             }
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        try {
+            filterChain.doFilter(servletRequest, servletResponse);
+        } catch (RuntimeException e) {
+            setResponseException(servletResponse);
+        }
     }
 
     private void setResponseException(HttpServletResponse servletResponse) throws IOException {
