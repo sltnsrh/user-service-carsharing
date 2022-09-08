@@ -59,7 +59,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden")
             }
     )
-    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserInfo(
             @Parameter(description = "User id", example = "1")
@@ -86,7 +85,6 @@ public class UserController {
                     @ApiResponse(responseCode = "405", description = "Method Not Allowed"),
                     @ApiResponse(responseCode = "409", description = "Conflict")
             })
-    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> update(
             @Parameter(description = "User id", example = "1")
@@ -114,7 +112,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponseDto> changeStatus(
@@ -142,9 +139,7 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PatchMapping("/{id}/to-balance")
-    @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     public ResponseEntity<String> toBalance(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
@@ -165,7 +160,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PatchMapping("/{id}/from-balance")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> fromBalance(
@@ -187,7 +181,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{id}/statistics")
     public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
@@ -215,7 +208,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @GetMapping("/{userId}/cars/{carId}")
     public ResponseEntity<Object> getCarStatistics(
@@ -237,7 +229,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PostMapping("/{userId}/cars")
     public ResponseEntity<Object> addCarToRent(
@@ -259,7 +250,6 @@ public class UserController {
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
-
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PatchMapping("/{userId}/cars/{carId}")
     public ResponseEntity<Object> changeCarStatus(
