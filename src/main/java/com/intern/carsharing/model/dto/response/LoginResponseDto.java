@@ -1,5 +1,6 @@
 package com.intern.carsharing.model.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponseDto {
     @ApiModelProperty(example = "bob@gmail.com")
     private String email;
@@ -17,4 +19,8 @@ public class LoginResponseDto {
     private String token;
     @ApiModelProperty(example = "a9dae4ce-3611-42a8-92ed-5d1eaf72fe09")
     private String refreshToken;
+    @ApiModelProperty(example = "Your email wasn't confirmed yet.")
+    private String message;
+    @ApiModelProperty(example = "localhost:8080/resend?email=bob7@gmail.com")
+    private String resendUrl;
 }

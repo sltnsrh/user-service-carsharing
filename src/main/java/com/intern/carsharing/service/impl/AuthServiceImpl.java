@@ -35,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private static final String INVALIDATE_STATUS = "INVALIDATE";
+    private static final String BLOCKED_STATUS = "BLOCKED";
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -80,13 +82,20 @@ public class AuthServiceImpl implements AuthService {
         String emailFromRequest = requestDto.getEmail();
         User user = userService.findByEmail(emailFromRequest);
         checkIfUserExists(user, emailFromRequest);
+        String userStatus = user.getStatus().getStatusType().name();
+        if (userStatus.equals(INVALIDATE_STATUS)) {
+            return getLoginInvalidateUserResponse(user);
+        }
+        if (userStatus.equals(BLOCKED_STATUS)) {
+            return getLoginBlockedUserResponse(user);
+        }
         String email = user.getEmail();
         String password = requestDto.getPassword();
         authenticate(email, password);
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         checkAndDeleteOldRefreshTokens(user);
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
-        return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
+        return getLoginSuccessResponse(email, jwtToken, refreshToken.getToken());
     }
 
     private void checkIfUserExists(User user, String emailFromRequest) {
@@ -95,6 +104,28 @@ public class AuthServiceImpl implements AuthService {
                     "User with email: " + emailFromRequest + " doesn't exist"
             );
         }
+    }
+
+    private LoginResponseDto getLoginInvalidateUserResponse(User user) {
+        return new LoginResponseDto(
+                user.getEmail(),
+                null,
+                null,
+                "Your email wasn't confirmed yet. "
+                        + "Confirm using the URL previously sent "
+                        + "to you or use the link below to resend a new one",
+                "localhost:8080/resend?email=" + user.getEmail()
+        );
+    }
+
+    private LoginResponseDto getLoginBlockedUserResponse(User user) {
+        return new LoginResponseDto(
+                user.getEmail(),
+                null,
+                null,
+                "Your account was blocked. Try contacting the administrator.",
+                null
+        );
     }
 
     private void authenticate(String email, String password) {
@@ -112,6 +143,18 @@ public class AuthServiceImpl implements AuthService {
         if (refreshTokenList != null) {
             refreshTokenList.forEach(refreshTokenService::delete);
         }
+    }
+
+    private LoginResponseDto getLoginSuccessResponse(
+            String email, String jwtToken, String refreshToken
+    ) {
+        return new LoginResponseDto(
+                email,
+                jwtToken,
+                refreshToken,
+                null,
+                null
+        );
     }
 
     @Override
@@ -179,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
         String email = refreshToken.getUser().getEmail();
         Set<Role> roles = refreshToken.getUser().getRoles();
         String jwtToken = jwtTokenProvider.createToken(email, roles);
-        return new LoginResponseDto(email, jwtToken, refreshToken.getToken());
+        return new LoginResponseDto(email, jwtToken, refreshToken.getToken(), null, null);
     }
 
     private RefreshToken resolveRefreshToken(String token) {
