@@ -146,6 +146,7 @@ public class UserController {
     @PatchMapping("/{id}/to-balance")
     @PreAuthorize("'ACTIVE' == authentication.details.status.statusType.name")
     public ResponseEntity<String> toBalance(
+            @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @Valid @RequestBody BalanceRequestDto requestDto
     ) {
@@ -168,6 +169,7 @@ public class UserController {
     @PatchMapping("/{id}/from-balance")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> fromBalance(
+            @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @Valid @RequestBody BalanceRequestDto requestDto
     ) {
@@ -189,6 +191,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{id}/statistics")
     public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
+            @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -215,8 +218,11 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @GetMapping("/{userId}/cars/{carId}")
-    public ResponseEntity<Object> getCarStatistics(@PathVariable("userId") Long userId,
-                                                   @PathVariable("carId") Long carId) {
+    public ResponseEntity<Object> getCarStatistics(
+            @Parameter(description = "User id", example = "1")
+            @PathVariable("userId") Long userId,
+            @Parameter(description = "Car id", example = "1")
+            @PathVariable("carId") Long carId) {
         return new ResponseEntity<>(userService.getCarStatistics(userId, carId), HttpStatus.OK);
     }
 
@@ -235,6 +241,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PostMapping("/{userId}/cars")
     public ResponseEntity<Object> addCarToRent(
+            @Parameter(description = "User id", example = "1")
             @PathVariable("userId") Long userId,
             @RequestBody CarRegistrationRequestDto requestDto
     ) {
@@ -256,7 +263,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PatchMapping("/{userId}/cars/{carId}")
     public ResponseEntity<Object> changeCarStatus(
+            @Parameter(description = "User id", example = "1")
             @PathVariable("userId") Long userId,
+            @Parameter(description = "Car id", example = "1")
             @PathVariable("carId") Long carId,
             @RequestBody ChangeCarStatusRequestDto requestDto
     ) {
