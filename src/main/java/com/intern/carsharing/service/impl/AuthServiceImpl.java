@@ -150,14 +150,18 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             throw new UsernameNotFoundException("User with email: " + email + " doesn't exist");
         }
+        checkIfUserStatusIsInvalidate(user, email);
+        checkAndDeleteOldConfirmationTokens(user);
+        ConfirmationToken confirmationToken = confirmationTokenService.create(user);
+        return getRegistrationResponseMessage(confirmationToken.getToken());
+    }
+
+    private void checkIfUserStatusIsInvalidate(User user, String email) {
         if (!user.getStatus().getStatusType().equals(StatusType.INVALIDATE)) {
             throw new ConfirmationTokenInvalidException(
                     "Your email " + email + " was already confirmed."
             );
         }
-        checkAndDeleteOldConfirmationTokens(user);
-        ConfirmationToken confirmationToken = confirmationTokenService.create(user);
-        return getRegistrationResponseMessage(confirmationToken.getToken());
     }
 
     private void checkAndDeleteOldConfirmationTokens(User user) {
