@@ -8,7 +8,6 @@ import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
-import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -17,10 +16,10 @@ import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
@@ -108,11 +107,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<StatisticsResponseDto> getTripStatistics(
+    public String getTripStatistics(
             Long userId, LocalDate startDate, LocalDate endDate
     ) {
         permissionService.check(userId);
-        return List.of(new StatisticsResponseDto());
+        WebClient client = WebClient.create("http://localhost:8082");
+        return client
+                    .get()
+                    .uri(String.join("", "/user/orders/", userId.toString()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
     }
 
     @Override

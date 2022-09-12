@@ -5,10 +5,8 @@ import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
-import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import java.time.LocalDate;
-import java.util.List;
 
 public interface UserService {
     User findByEmail(String email);
@@ -25,7 +23,7 @@ public interface UserService {
 
     String fromBalance(Long id, BalanceRequestDto balanceRequestDto);
 
-    List<StatisticsResponseDto> getTripStatistics(
+    String getTripStatistics(
             Long userId, LocalDate startDate, LocalDate endDate
     );
 
