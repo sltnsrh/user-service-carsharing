@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
@@ -114,14 +116,29 @@ public class UserServiceImpl implements UserService {
         return client
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(String.join("", "/user/orders/", userId.toString()))
-                        .queryParam("carType", carType)
-                        .queryParam("dateStart", startDate)
-                        .queryParam("dateEnd", endDate)
-                        .build())
+                        .path("/user/orders/" + userId)
+                        .queryParams(getPresentQueryParams(startDate, endDate, carType))
+                        .build()
+                )
                 .retrieve()
                 .bodyToMono(Object.class)
                 .block();
+    }
+
+    private MultiValueMap<String, String> getPresentQueryParams(
+            String startDate, String endDate, String carType
+    ) {
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        if (carType != null) {
+            queryParams.add("carType", carType);
+        }
+        if (startDate != null) {
+            queryParams.add("dateStart", startDate);
+        }
+        if (endDate != null) {
+            queryParams.add("dateEnd", endDate);
+        }
+        return queryParams;
     }
 
     @Override
