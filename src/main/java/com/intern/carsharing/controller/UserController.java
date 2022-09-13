@@ -5,7 +5,6 @@ import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
-import com.intern.carsharing.model.dto.response.StatisticsResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.service.UserService;
@@ -16,11 +15,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.LocalDate;
-import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -183,17 +179,17 @@ public class UserController {
             })
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/{id}/statistics")
-    public ResponseEntity<List<StatisticsResponseDto>> getStatistics(
+    public ResponseEntity<Object> getStatistics(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate dateStart,
+            String dateStart,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate dateEnd
+            String dateEnd,
+            @RequestParam(required = false)
+            String carType
     ) {
-        return new ResponseEntity<>(userService.getTripStatistics(id, dateStart, dateEnd),
+        return new ResponseEntity<>(userService.getTripStatistics(id, dateStart, dateEnd, carType),
                 HttpStatus.OK);
     }
 
