@@ -6,7 +6,6 @@ import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
-import java.time.LocalDate;
 
 public interface UserService {
     User findByEmail(String email);
@@ -23,8 +22,8 @@ public interface UserService {
 
     String fromBalance(Long id, BalanceRequestDto balanceRequestDto);
 
-    String getTripStatistics(
-            Long userId, LocalDate startDate, LocalDate endDate
+    Object getTripStatistics(
+            Long userId, String startDate, String endDate, String carType
     );
 
     String getCarStatistics(Long userId, Long carId);

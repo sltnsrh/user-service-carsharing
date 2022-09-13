@@ -15,7 +15,6 @@ import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,17 +106,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String getTripStatistics(
-            Long userId, LocalDate startDate, LocalDate endDate
+    public Object getTripStatistics(
+            Long userId, String startDate, String endDate, String carType
     ) {
         permissionService.check(userId);
         WebClient client = WebClient.create("http://localhost:8082");
         return client
-                    .get()
-                    .uri(String.join("", "/user/orders/", userId.toString()))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(String.join("", "/user/orders/", userId.toString()))
+                        .queryParam("carType", carType)
+                        .queryParam("dateStart", startDate)
+                        .queryParam("dateEnd", endDate)
+                        .build())
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
     }
 
     @Override
