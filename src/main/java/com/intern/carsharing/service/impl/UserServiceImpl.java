@@ -16,10 +16,12 @@ import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
@@ -148,9 +150,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
+    public Object addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
         permissionService.check(userId);
-        return "Your car was added to a rent";
+        requestDto.setCarOwnerId(userId);
+        WebClient client = WebClient.create("http://localhost:8084");
+        return client
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/cars")
+                        .build()
+                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(requestDto))
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
     }
 
     @Override

@@ -28,7 +28,7 @@ public interface UserService {
 
     String getCarStatistics(Long userId, Long carId);
 
-    String addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
+    Object addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
 
     String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto);
 }
