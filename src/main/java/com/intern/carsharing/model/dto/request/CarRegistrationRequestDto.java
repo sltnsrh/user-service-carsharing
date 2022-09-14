@@ -21,12 +21,20 @@ public class CarRegistrationRequestDto {
     private String licensePlate;
     @ApiModelProperty(example = "sedan")
     private String bodyType;
-    @ApiModelProperty(example = "E")
+    @ApiModelProperty(example = "REAR_WHEEL_DRIVE")
+    private String wheelsDriveType;
+    @ApiModelProperty(example = "PREMIUM")
     private String carClass;
-    @ApiModelProperty(example = "ready")
+    @ApiModelProperty(example = "FREE")
     private String status;
     @ApiModelProperty(example = "gasoline")
     private String engineType;
     @ApiModelProperty(example = "automatic")
     private String transmission;
+    @ApiModelProperty(example = "49.59")
+    private double latitude;
+    @ApiModelProperty(example = "25.92")
+    private double longitude;
+    @ApiModelProperty(example = "1")
+    private Long ownerId;
 }
