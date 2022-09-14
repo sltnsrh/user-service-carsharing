@@ -232,7 +232,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestBody CarRegistrationRequestDto requestDto
     ) {
-        return new ResponseEntity<>(userService.addCarToRent(userId, requestDto), HttpStatus.OK);
+        return userService.addCarToRent(userId, requestDto);
     }
 
     @Operation(

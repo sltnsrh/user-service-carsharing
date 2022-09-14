@@ -6,6 +6,7 @@ import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
+import org.springframework.http.ResponseEntity;
 
 public interface UserService {
     User findByEmail(String email);
@@ -28,7 +29,7 @@ public interface UserService {
 
     String getCarStatistics(Long userId, Long carId);
 
-    Object addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
+    ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
 
     String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto);
 }

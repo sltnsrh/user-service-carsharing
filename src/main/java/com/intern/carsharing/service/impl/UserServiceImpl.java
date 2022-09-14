@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.Balance;
@@ -15,14 +16,18 @@ import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @RequiredArgsConstructor
@@ -152,11 +157,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Object addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
+    public ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
         permissionService.check(userId);
         requestDto.setCarOwnerId(userId);
+        try {
+            return executeRequest(requestDto);
+        } catch (WebClientResponseException e) {
+            ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                    e.getMessage(), e.getStatusCode(), LocalDateTime.now().toString()
+            );
+            return new ResponseEntity<>(apiExceptionObject, e.getStatusCode());
+        }
+    }
+
+    private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto) {
         WebClient client = WebClient.create(CAR_SERVICE_HOST);
-        return client
+        Object response = client
                 .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/cars")
@@ -167,6 +183,7 @@ public class UserServiceImpl implements UserService {
                 .retrieve()
                 .bodyToMono(Object.class)
                 .block();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override
