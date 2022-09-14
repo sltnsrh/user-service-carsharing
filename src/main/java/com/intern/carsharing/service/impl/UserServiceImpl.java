@@ -27,6 +27,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final String BACKOFFICE_SERVICE_HOST = "http://localhost:8082";
+    private static final String CAR_SERVICE_HOST = "http://localhost:8084";
     private final UserRepository userRepository;
     private final StatusService statusService;
     private final BalanceService balanceService;
@@ -114,7 +116,7 @@ public class UserServiceImpl implements UserService {
             Long userId, String startDate, String endDate, String carType
     ) {
         permissionService.check(userId);
-        WebClient client = WebClient.create("http://localhost:8082");
+        WebClient client = WebClient.create(BACKOFFICE_SERVICE_HOST);
         return client
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -153,7 +155,7 @@ public class UserServiceImpl implements UserService {
     public Object addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
         permissionService.check(userId);
         requestDto.setCarOwnerId(userId);
-        WebClient client = WebClient.create("http://localhost:8084");
+        WebClient client = WebClient.create(CAR_SERVICE_HOST);
         return client
                 .post()
                 .uri(uriBuilder -> uriBuilder
