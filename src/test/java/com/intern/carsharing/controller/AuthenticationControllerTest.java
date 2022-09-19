@@ -17,6 +17,7 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
@@ -26,6 +27,7 @@ import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
+import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +38,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -48,6 +51,8 @@ class AuthenticationControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private WebApplicationContext context;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
     @MockBean
     private UserRepository userRepository;
     @MockBean
@@ -366,5 +371,26 @@ class AuthenticationControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void validateTokenWithValidTokenAndActiveUser() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("bob@gmail.com");
+        user.setPassword("password");
+        user.setStatus(new Status(1L, StatusType.ACTIVE));
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+        String jwt = jwtTokenProvider
+                .createToken(user.getEmail(), user.getRoles());
+        Mockito.when(userRepository.findUserByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
+        requestDto.setToken("Bearer " + jwt);
+        mockMvc.perform(get("/validate-token")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
     }
 }
