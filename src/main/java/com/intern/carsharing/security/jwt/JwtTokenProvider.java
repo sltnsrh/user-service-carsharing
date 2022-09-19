@@ -87,7 +87,7 @@ public class JwtTokenProvider {
         }
     }
 
-    private List<String> getRoleNames(List<Role> roles) {
+    public List<String> getRoleNames(List<Role> roles) {
         return roles.stream()
                 .map(role -> role.getRoleName().toString())
                 .collect(Collectors.toList());
