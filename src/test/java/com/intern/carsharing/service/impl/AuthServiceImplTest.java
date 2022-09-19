@@ -3,6 +3,7 @@ package com.intern.carsharing.service.impl;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
+import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.model.ConfirmationToken;
@@ -13,7 +14,9 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
@@ -23,6 +26,8 @@ import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -265,5 +270,57 @@ class AuthServiceImplTest {
         Mockito.when(refreshTokenService.findByToken("refreshtoken")).thenReturn(refreshToken);
         Assertions.assertThrows(RefreshTokenException.class,
                 () -> authService.refreshToken(requestDto));
+    }
+
+    @Test
+    void validateAuthTokenWithValidAndActiveUser() {
+        String token = "Bearer token";
+        String tokenAfterResolve = "token";
+        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
+        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
+        User user = new User();
+        user.setId(1L);
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+        user.setStatus(new Status(1L, StatusType.ACTIVE));
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(jwtTokenProvider.getRoleNames(
+                new ArrayList<>(user.getRoles()))).thenReturn(List.of("USER"));
+        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
+        requestDto.setToken(token);
+        ValidateTokenResponseDto actual = authService.validateAuthToken(requestDto);
+        System.out.println("");
+        Assertions.assertEquals(1L, actual.getUserId());
+        Assertions.assertEquals(List.of("USER"), actual.getRoles());
+    }
+
+    @Test
+    void validateAuthTokenWithUserStatusBlocked() {
+        String token = "Bearer token";
+        String tokenAfterResolve = "token";
+        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
+        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
+        User user = new User();
+        user.setId(1L);
+        user.setRoles(Set.of(new Role(1L, RoleName.USER)));
+        user.setStatus(new Status(1L, StatusType.BLOCKED));
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
+        requestDto.setToken(token);
+        Assertions.assertThrows(AuthTokenException.class,
+                () -> authService.validateAuthToken(requestDto));
+    }
+
+    @Test
+    void validateAuthTokenWithNotValidToken() {
+        String token = "Bearer token";
+        String tokenAfterResolve = "token";
+        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
+        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(false);
+        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
+        requestDto.setToken(token);
+        Assertions.assertThrows(AuthTokenException.class,
+                () -> authService.validateAuthToken(requestDto));
     }
 }
