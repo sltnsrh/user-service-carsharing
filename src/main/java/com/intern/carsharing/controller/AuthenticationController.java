@@ -3,7 +3,9 @@ package com.intern.carsharing.controller;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -115,5 +117,26 @@ public class AuthenticationController {
             @RequestBody RefreshTokenRequestDto requestDto
     ) {
         return new ResponseEntity<>(authService.refreshToken(requestDto), HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Validate user authentication token",
+            description = "Allows to validate user authentication token. "
+                    + "As response user gets user id and list of user roles. "
+                    + "If the token is not valid or user status isn't ACTIVE, "
+                    + "it will be thrown a response with 403 Forbidden. "
+                    + "Request should be an authorized.",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden")
+            }
+    )
+    @GetMapping("/validate-token")
+    public ResponseEntity<ValidateTokenResponseDto> validateToken(
+            @Valid @RequestBody ValidateTokenRequestDto requestDto
+    ) {
+        return new ResponseEntity<>(authService.validateAuthToken(requestDto), HttpStatus.OK);
     }
 }
