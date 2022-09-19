@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
@@ -10,7 +11,9 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthService;
@@ -21,6 +24,7 @@ import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -231,5 +235,23 @@ public class AuthServiceImpl implements AuthService {
             throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
         }
         return refreshToken;
+    }
+
+    @Override
+    public ValidateTokenResponseDto validateAuthToken(ValidateTokenRequestDto requestDto) {
+        String token = jwtTokenProvider.resolveToken(requestDto.getToken());
+        if (jwtTokenProvider.validateToken(token)) {
+            String userName = jwtTokenProvider.getUserName(token);
+            User user = userService.findByEmail(userName);
+            if (!user.getStatus().getStatusType().equals(StatusType.ACTIVE)) {
+                throw new AuthTokenException("Actual user isn't active: " + userName);
+            }
+            List<String> roles = jwtTokenProvider.getRoleNames(new ArrayList<>(user.getRoles()));
+            ValidateTokenResponseDto responseDto = new ValidateTokenResponseDto();
+            responseDto.setUserId(user.getId());
+            responseDto.setRoles(roles);
+            return responseDto;
+        }
+        throw new AuthTokenException("Jwt auth token not valid: " + requestDto.getToken());
     }
 }
