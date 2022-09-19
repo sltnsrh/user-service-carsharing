@@ -80,7 +80,8 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {
             LimitedPermissionException.class,
-            RefreshTokenException.class
+            RefreshTokenException.class,
+            AuthTokenException.class
     })
     public ResponseEntity<ApiExceptionObject> handleLimitedPermissionException(
             RuntimeException e
