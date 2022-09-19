@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class JwtTokenProvider {
     private static final int TOKEN_START_INDEX = 7;
     private static final String ROLES_CLAIMS = "roles";
-    private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_START = "Bearer ";
     private final UserDetailsService userDetailsService;
     private final UserService userService;
@@ -73,10 +71,9 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        String token = request.getHeader(AUTHORIZATION_HEADER);
-        if (token != null && token.startsWith(BEARER_START)) {
-            return token.substring(TOKEN_START_INDEX);
+    public String resolveToken(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith(BEARER_START)) {
+            return bearerToken.substring(TOKEN_START_INDEX);
         }
         return null;
     }

@@ -21,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String JSON_TYPE = "application/json";
     private static final String JWT_INVALID_MESSAGE = "Jwt token not valid or expired";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
 
@@ -30,7 +31,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             @NotNull HttpServletResponse servletResponse,
             @NotNull FilterChain filterChain
     ) throws IOException, ServletException {
-        String token = jwtTokenProvider.resolveToken(servletRequest);
+        String token = jwtTokenProvider
+                .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
             if (jwtTokenProvider.validateToken(token)) {
                 Authentication authentication = jwtTokenProvider.getAuthentication(token);
