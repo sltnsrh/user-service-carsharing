@@ -31,5 +31,7 @@ public interface UserService {
 
     ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
 
-    String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto);
+    ResponseEntity<Object> changeCarStatus(
+            Long userId, Long carId, ChangeCarStatusRequestDto requestDto
+    );
 }

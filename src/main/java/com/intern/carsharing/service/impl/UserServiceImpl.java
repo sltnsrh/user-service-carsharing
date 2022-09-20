@@ -1,6 +1,8 @@
 package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.exception.ApiExceptionObject;
+import com.intern.carsharing.exception.CarIsRentedException;
+import com.intern.carsharing.exception.CarNotFoundException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.Balance;
@@ -9,6 +11,7 @@ import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.CarDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -17,6 +20,7 @@ import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +38,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class UserServiceImpl implements UserService {
     private static final String BACKOFFICE_SERVICE_HOST = "http://localhost:8082";
     private static final String CAR_SERVICE_HOST = "http://localhost:8084";
+    private static final String RENTED_STATUS = "RENTED";
     private final UserRepository userRepository;
     private final StatusService statusService;
     private final BalanceService balanceService;
@@ -163,10 +168,7 @@ public class UserServiceImpl implements UserService {
         try {
             return executeRequest(requestDto);
         } catch (WebClientResponseException e) {
-            ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                    e.getMessage(), e.getStatusCode(), LocalDateTime.now().toString()
-            );
-            return new ResponseEntity<>(apiExceptionObject, e.getStatusCode());
+            return createResponseEntityException(e);
         }
     }
 
@@ -183,12 +185,56 @@ public class UserServiceImpl implements UserService {
                 .retrieve()
                 .bodyToMono(Object.class)
                 .block();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    private ResponseEntity<Object> createResponseEntityException(
+            WebClientResponseException e
+    ) {
+        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
+                e.getMessage(), e.getStatusCode(), LocalDateTime.now().toString()
+        );
+        return new ResponseEntity<>(apiExceptionObject, e.getStatusCode());
     }
 
     @Override
-    public String changeCarStatus(Long userId, Long carId, ChangeCarStatusRequestDto requestDto) {
+    public ResponseEntity<Object> changeCarStatus(
+            Long userId, Long carId, ChangeCarStatusRequestDto requestDto
+    ) {
         permissionService.check(userId);
-        return "Your car status was changed";
+        checkIfCarBelongsUserAndNotRented(carId, userId);
+        WebClient client = WebClient.create(CAR_SERVICE_HOST);
+        try {
+            Object response = client
+                    .post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/cars/status/" + carId)
+                            .queryParam("carStatus", requestDto.getStatus())
+                            .build()
+                    )
+                    .retrieve()
+                    .bodyToMono(Object.class)
+                    .block();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (WebClientResponseException e) {
+            return createResponseEntityException(e);
+        }
+    }
+
+    private void checkIfCarBelongsUserAndNotRented(Long carId, Long userId) {
+        WebClient client = WebClient.create(CAR_SERVICE_HOST);
+        CarDto car = client
+                .get()
+                .uri("/cars/" + carId)
+                .retrieve()
+                .bodyToMono(CarDto.class)
+                .block();
+        if (car == null || !Objects.equals(car.getCarOwnerId(), userId)) {
+            throw new CarNotFoundException("Can't find your car with id: " + carId);
+        }
+        if (car.getCarStatus().equals(RENTED_STATUS)) {
+            throw new CarIsRentedException("Your car is rented now, "
+                    + "you can't change the status");
+        }
     }
 }
