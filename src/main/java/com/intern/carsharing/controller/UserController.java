@@ -256,7 +256,6 @@ public class UserController {
             @PathVariable("carId") Long carId,
             @RequestBody ChangeCarStatusRequestDto requestDto
     ) {
-        return new ResponseEntity<>(userService.changeCarStatus(userId, carId, requestDto),
-                HttpStatus.OK);
+        return userService.changeCarStatus(userId, carId, requestDto);
     }
 }
