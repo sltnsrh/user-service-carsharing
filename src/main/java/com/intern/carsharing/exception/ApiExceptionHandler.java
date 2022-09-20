@@ -55,8 +55,11 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiExceptionObject, unauthorized);
     }
 
-    @ExceptionHandler(value = {UserNotFoundException.class})
-    public ResponseEntity<ApiExceptionObject> handleUserNorFoundException(UserNotFoundException e) {
+    @ExceptionHandler(value = {
+            UserNotFoundException.class,
+            CarNotFoundException.class
+    })
+    public ResponseEntity<ApiExceptionObject> handleUserNorFoundException(RuntimeException e) {
         HttpStatus notFound = HttpStatus.NOT_FOUND;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
                 e.getMessage(),
@@ -95,9 +98,12 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiExceptionObject, forbidden);
     }
 
-    @ExceptionHandler(value = {ConfirmationTokenInvalidException.class})
+    @ExceptionHandler(value = {
+            ConfirmationTokenInvalidException.class,
+            CarIsRentedException.class
+    })
     public ResponseEntity<ApiExceptionObject> handleConfirmationTokenInvalidException(
-            ConfirmationTokenInvalidException e
+            RuntimeException e
     ) {
         HttpStatus accepted = HttpStatus.ACCEPTED;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
