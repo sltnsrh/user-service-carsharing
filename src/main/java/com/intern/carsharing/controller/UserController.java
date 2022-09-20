@@ -242,6 +242,7 @@ public class UserController {
             tags = {"Users"},
             responses = {
                     @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "202", description = "Accepted"),
                     @ApiResponse(responseCode = "400", description = "Bad Request"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
