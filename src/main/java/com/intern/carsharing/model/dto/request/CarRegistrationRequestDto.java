@@ -14,13 +14,10 @@ public class CarRegistrationRequestDto {
     @JsonProperty("constructionYear")
     private int year;
     @ApiModelProperty(example = "80500")
-    @JsonProperty("mileageInKilometers")
-    private double millageKm;
+    private double mileageKm;
     @ApiModelProperty(example = "30.50")
-    @JsonProperty("fuelLevel")
     private double fuelLevelLiter;
     @ApiModelProperty(example = "15.5")
-    @JsonProperty("fuelConsumption")
     private double fuelConsumptionLitersPer100Km;
     @ApiModelProperty(example = "BC1234AB")
     private String licensePlate;
