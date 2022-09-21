@@ -36,8 +36,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private static final String BACKOFFICE_SERVICE_HOST = "http://localhost:8082";
-    private static final String CAR_SERVICE_HOST = "http://localhost:8084";
+    private static final WebClient carClient = WebClient.create("http://localhost:8084");
+    private static final WebClient officeClient = WebClient.create("http://localhost:8082");
     private static final String RENTED_STATUS = "RENTED";
     private final UserRepository userRepository;
     private final StatusService statusService;
@@ -126,8 +126,7 @@ public class UserServiceImpl implements UserService {
             Long userId, String startDate, String endDate, String carType
     ) {
         permissionService.check(userId);
-        WebClient client = WebClient.create(BACKOFFICE_SERVICE_HOST);
-        return client
+        return officeClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/user/orders/" + userId)
@@ -173,8 +172,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto) {
-        WebClient client = WebClient.create(CAR_SERVICE_HOST);
-        Object response = client
+        Object response = carClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/cars")
@@ -203,9 +201,8 @@ public class UserServiceImpl implements UserService {
     ) {
         permissionService.check(userId);
         checkIfCarBelongsUserAndNotRented(carId, userId);
-        WebClient client = WebClient.create(CAR_SERVICE_HOST);
         try {
-            Object response = client
+            Object response = carClient
                     .post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/cars/status/" + carId)
@@ -222,8 +219,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkIfCarBelongsUserAndNotRented(Long carId, Long userId) {
-        WebClient client = WebClient.create(CAR_SERVICE_HOST);
-        CarDto car = client
+        CarDto car = carClient
                 .get()
                 .uri("/cars/" + carId)
                 .retrieve()
