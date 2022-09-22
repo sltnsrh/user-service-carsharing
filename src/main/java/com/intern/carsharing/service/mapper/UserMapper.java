@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
 public abstract class UserMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(source = "roles", target = "roles", qualifiedByName = "setUserRole")
+    @Mapping(source = "role", target = "roles", qualifiedByName = "setUserRole")
     @Mapping(source = "status", target = "status", qualifiedByName = "setStatusActive")
     public abstract User toModel(RegistrationUserRequestDto dto);
 

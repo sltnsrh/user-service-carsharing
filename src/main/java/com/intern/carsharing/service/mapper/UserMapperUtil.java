@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
@@ -25,10 +26,15 @@ public class UserMapperUtil {
     }
 
     @Named("setUserRole")
-    Set<Role> setUserRole(Set<String> value) {
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleService.findByName(RoleName.USER));
-        return roles;
+    Set<Role> setUserRole(@NotNull String value) {
+        String roleName = value.toUpperCase();
+        if (roleName.equals("USER") || roleName.equals("CAR_OWNER")) {
+            Set<Role> roles = new HashSet<>();
+            roles.add(roleService.findByName(RoleName.valueOf(roleName)));
+            return roles;
+        }
+        throw new IllegalArgumentException("There is no role: " + roleName
+                + ". You can choose between USER and CAR_OWNER");
     }
 
     @Named("rolesToSetString")
