@@ -13,5 +13,4 @@ public class OrderDto {
     private LocalDateTime endDateTime;
     private BigDecimal price;
     private Long carId;
-    private String carType;
 }
