@@ -46,5 +46,6 @@ public class RegistrationUserRequestDto {
     @Size(min = 9, max = 9, message = "The driver's license number must contain 9 characters")
     private String driverLicence;
     private String status;
+    @NotNull(message = "Role field must not be null")
     private String role;
 }
