@@ -200,7 +200,9 @@ public class UserServiceImpl implements UserService {
             Long userId, Long carId, ChangeCarStatusRequestDto requestDto
     ) {
         permissionService.check(userId);
-        checkIfCarBelongsUserAndNotRented(carId, userId);
+        CarDto car = getCarById(carId);
+        checkIfCarBelongsUser(car, userId, carId);
+        checkIfCarNotRented(car);
         try {
             Object response = carClient
                     .post()
@@ -218,16 +220,22 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void checkIfCarBelongsUserAndNotRented(Long carId, Long userId) {
-        CarDto car = carClient
+    private CarDto getCarById(Long carId) {
+        return carClient
                 .get()
                 .uri("/cars/" + carId)
                 .retrieve()
                 .bodyToMono(CarDto.class)
                 .block();
+    }
+
+    private void checkIfCarBelongsUser(CarDto car, Long userId, Long carId) {
         if (car == null || !Objects.equals(car.getCarOwnerId(), userId)) {
             throw new CarNotFoundException("Can't find your car with id: " + carId);
         }
+    }
+
+    private void checkIfCarNotRented(CarDto car) {
         if (car.getCarStatus().equals(RENTED_STATUS)) {
             throw new CarIsRentedException("Your car is rented now, "
                     + "you can't change the status");
