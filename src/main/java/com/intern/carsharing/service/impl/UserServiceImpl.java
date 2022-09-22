@@ -12,15 +12,22 @@ import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.CarDto;
+import com.intern.carsharing.model.dto.response.CarStatisticsResponseDto;
+import com.intern.carsharing.model.dto.response.OrderDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
 import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
+import com.intern.carsharing.service.mapper.CarMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,6 +50,7 @@ public class UserServiceImpl implements UserService {
     private final StatusService statusService;
     private final BalanceService balanceService;
     private final PermissionService permissionService;
+    private final CarMapper carMapper;
 
     @Override
     public User findByEmail(String email) {
@@ -155,9 +163,55 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String getCarStatistics(Long userId, Long carId) {
+    public ResponseEntity<Object> getCarStatistics(
+            Long userId, Long carId, String startDate, String endDate, String carType
+    ) {
         permissionService.check(userId);
-        return "Your car statistics";
+        CarDto car = getCarById(carId);
+        checkIfCarBelongsUser(car, userId, carId);
+        MultiValueMap<String, String> queryParams =
+                getPresentQueryParams(startDate, endDate, carType);
+        List<OrderDto> carOrders = getAllCarOrders(queryParams, carId);
+        CarStatisticsResponseDto responseDto = carMapper.toStatisticsDto(car);
+        responseDto.setOrders(carOrders);
+        responseDto.setTripsNumber(carOrders.size());
+        BigDecimal generalIncome = carOrders.stream()
+                .map(OrderDto::getPrice)
+                .reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+        responseDto.setGeneralIncome(generalIncome);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    private CarDto getCarById(Long carId) {
+        try {
+            return carClient
+                    .get()
+                    .uri("/cars/" + carId)
+                    .retrieve()
+                    .bodyToMono(CarDto.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            throw new CarNotFoundException("Can't find car with id: " + carId);
+        }
+    }
+
+    private List<OrderDto> getAllCarOrders(MultiValueMap<String, String> queryParams, Long carId) {
+        OrderDto[] orderDtoArray = officeClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/manager/orders")
+                        .queryParams(queryParams)
+                        .build()
+                )
+                .retrieve()
+                .bodyToMono(OrderDto[].class)
+                .block();
+        if (orderDtoArray != null) {
+            return Arrays.stream(orderDtoArray)
+                    .filter(order -> order.getCarId().equals(carId))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -220,18 +274,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private CarDto getCarById(Long carId) {
-        return carClient
-                .get()
-                .uri("/cars/" + carId)
-                .retrieve()
-                .bodyToMono(CarDto.class)
-                .block();
-    }
-
     private void checkIfCarBelongsUser(CarDto car, Long userId, Long carId) {
-        if (car == null || !Objects.equals(car.getCarOwnerId(), userId)) {
-            throw new CarNotFoundException("Can't find your car with id: " + carId);
+        if (!Objects.equals(car.getCarOwnerId(), userId)) {
+            throw new CarNotFoundException("Car with id: " + carId
+                    + " doesn't belong to the user with id: " + userId);
         }
     }
 

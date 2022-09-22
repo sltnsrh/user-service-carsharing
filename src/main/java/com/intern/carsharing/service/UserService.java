@@ -27,7 +27,9 @@ public interface UserService {
             Long userId, String startDate, String endDate, String carType
     );
 
-    String getCarStatistics(Long userId, Long carId);
+    ResponseEntity<Object> getCarStatistics(
+            Long userId, Long carId, String startDate, String endDate, String carType
+    );
 
     ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
 
