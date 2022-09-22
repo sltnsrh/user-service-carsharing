@@ -83,6 +83,7 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
+        requestUserDto.setRole("USER");
 
         UserResponseDto userResponseDto = new UserResponseDto();
         userResponseDto.setId(1L);
@@ -92,7 +93,7 @@ class AuthenticationControllerTest {
         userResponseDto.setLastName("Alister");
         userResponseDto.setAge(21);
         userResponseDto.setDriverLicence("DFG23K34H");
-        userResponseDto.setRoles(Set.of("ADMIN"));
+        userResponseDto.setRoles(Set.of("USER"));
         userResponseDto.setStatus("ACTIVE");
 
         User user = new User();
@@ -151,6 +152,7 @@ class AuthenticationControllerTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
+        requestUserDto.setRole("USER");
 
         Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
                 .thenReturn(Optional.of(new User()));
