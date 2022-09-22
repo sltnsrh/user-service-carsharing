@@ -210,8 +210,14 @@ public class UserController {
             @Parameter(description = "User id", example = "1")
             @PathVariable("userId") Long userId,
             @Parameter(description = "Car id", example = "1")
-            @PathVariable("carId") Long carId) {
-        return new ResponseEntity<>(userService.getCarStatistics(userId, carId), HttpStatus.OK);
+            @PathVariable("carId") Long carId,
+            @RequestParam(required = false)
+            String dateStart,
+            @RequestParam(required = false)
+            String dateEnd,
+            @RequestParam(required = false)
+            String carType) {
+        return userService.getCarStatistics(userId, carId, dateStart, dateEnd, carType);
     }
 
     @Operation(
