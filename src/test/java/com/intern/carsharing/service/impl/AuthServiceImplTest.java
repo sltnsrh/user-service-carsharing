@@ -72,6 +72,7 @@ class AuthServiceImplTest {
         requestUserDto.setLastName("Alister");
         requestUserDto.setAge(21);
         requestUserDto.setDriverLicence("DFG23K34H");
+        requestUserDto.setRole("USER");
 
         User user = new User();
         user.setEmail("bob@gmail.com");
@@ -80,7 +81,7 @@ class AuthServiceImplTest {
         user.setLastName("Alister");
         user.setAge(21);
         user.setDriverLicence("DFG23K34H");
-        user.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
+        user.setRoles(Set.of(new Role(1L, RoleName.valueOf("USER"))));
         user.setStatus(new Status(1L, StatusType.valueOf("INVALIDATE")));
 
         User userAfterSave = new User();
@@ -91,7 +92,7 @@ class AuthServiceImplTest {
         userAfterSave.setLastName("Alister");
         userAfterSave.setAge(21);
         userAfterSave.setDriverLicence("DFG23K34H");
-        userAfterSave.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
+        userAfterSave.setRoles(Set.of(new Role(1L, RoleName.valueOf("USER"))));
         userAfterSave.setStatus(new Status(1L, StatusType.valueOf("INVALIDATE")));
 
         ConfirmationToken confirmationToken = new ConfirmationToken();
