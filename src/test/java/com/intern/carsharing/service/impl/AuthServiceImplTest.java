@@ -215,6 +215,9 @@ class AuthServiceImplTest {
         confirmationToken.setUser(user);
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
         Mockito.when(confirmationTokenService.create(user)).thenReturn(confirmationToken);
+        Mockito.when(confirmationTokenService.findAllByUser(user))
+                .thenReturn(List.of(new ConfirmationToken()));
+        Mockito.doNothing().when(confirmationTokenService).delete(any(ConfirmationToken.class));
         String actual = authService.resendEmail("bob@gmail.com");
         Assertions.assertTrue(actual.contains("Thanks for the registration"));
     }
