@@ -196,6 +196,7 @@
                                 <exclude>com/intern/carsharing/model/**</exclude>
                                 <exclude>com/intern/carsharing/exception/**</exclude>
                                 <exclude>com/intern/carsharing/service/mapper/UserMapperImpl.class</exclude>
+                                <exclude>com/intern/carsharing/service/mapper/CarMapperImpl.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
