@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,9 +44,21 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private static final WebClient carClient = WebClient.create("http://localhost:8084");
-    private static final WebClient officeClient = WebClient.create("http://localhost:8082");
     private static final String RENTED_STATUS = "RENTED";
+    @Value("${backoffice.service.host}")
+    private String backOfficeServiceHost;
+    @Value("${backoffice.service.port}")
+    private String backOfficeServicePort;
+    @Value("${car.service.host}")
+    private String carServiceHost;
+    @Value("${car.service.port}")
+    private String carServicePort;
+    private final WebClient carClient = WebClient.create(
+            carServiceHost + ":" + carServicePort
+    );
+    private final WebClient officeClient = WebClient.create(
+            backOfficeServiceHost + ":" + backOfficeServicePort
+    );
     private final UserRepository userRepository;
     private final StatusService statusService;
     private final BalanceService balanceService;
