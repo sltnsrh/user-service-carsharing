@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,20 +44,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private static final String RENTED_STATUS = "RENTED";
-    @Value("${backoffice.service.host}")
-    private String backOfficeServiceHost;
-    @Value("${backoffice.service.port}")
-    private String backOfficeServicePort;
-    @Value("${car.service.host}")
-    private String carServiceHost;
-    @Value("${car.service.port}")
-    private String carServicePort;
-    private final WebClient carClient = WebClient.create(
-            carServiceHost + ":" + carServicePort
-    );
-    private final WebClient officeClient = WebClient.create(
-            backOfficeServiceHost + ":" + backOfficeServicePort
-    );
+    private final WebClient backofficeServiceClient;
+    private final WebClient carServiceClient;
     private final UserRepository userRepository;
     private final StatusService statusService;
     private final BalanceService balanceService;
@@ -147,7 +134,7 @@ public class UserServiceImpl implements UserService {
             Long userId, String startDate, String endDate, String carType
     ) {
         permissionService.check(userId);
-        return officeClient
+        return backofficeServiceClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/user/orders/" + userId)
@@ -197,7 +184,7 @@ public class UserServiceImpl implements UserService {
 
     private CarDto getCarById(Long carId) {
         try {
-            return carClient
+            return carServiceClient
                     .get()
                     .uri("/cars/" + carId)
                     .retrieve()
@@ -209,7 +196,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<OrderDto> getAllCarOrders(MultiValueMap<String, String> queryParams, Long carId) {
-        OrderDto[] orderDtoArray = officeClient
+        OrderDto[] orderDtoArray = backofficeServiceClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/manager/orders")
@@ -239,7 +226,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto) {
-        Object response = carClient
+        Object response = carServiceClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/cars")
@@ -271,7 +258,7 @@ public class UserServiceImpl implements UserService {
         checkIfCarBelongsUser(car, userId, carId);
         checkIfCarNotRented(car);
         try {
-            Object response = carClient
+            Object response = carServiceClient
                     .post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/cars/status/" + carId)
