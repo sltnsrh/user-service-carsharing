@@ -2,11 +2,14 @@ package com.intern.carsharing.service.impl;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import com.intern.carsharing.exception.CarIsRentedException;
 import com.intern.carsharing.exception.CarNotFoundException;
 import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
+import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
+import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
@@ -17,6 +20,7 @@ import com.intern.carsharing.service.mapper.CarMapper;
 import com.intern.carsharing.service.mapper.CarMapperImpl;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -280,5 +284,93 @@ class UserServiceImplTest {
                 () -> userService.getCarStatistics(
                 1L, 1L, null, null, null));
         mockWebServer.shutdown();
+    }
+
+    @Test
+    void addCarToRentWithValidDataAndUserId() throws IOException {
+        mockWebServer.start(8082);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(201)
+                .addHeader("Content-type", "application/json")
+                .setBody("{\"id\": 1, \n \"brand\":\"BMW\"}"
+                ));
+        CarRegistrationRequestDto requestDto = new CarRegistrationRequestDto();
+        ResponseEntity<Object> actual = userService.addCarToRent(1L, requestDto);
+        mockWebServer.shutdown();
+        Assertions.assertEquals(HttpStatus.CREATED, actual.getStatusCode());
+        Assertions.assertNotNull(actual.getBody());
+    }
+
+    @Test
+    void addCarToRentWithInvalidData() throws IOException {
+        mockWebServer.start(8082);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(404));
+        CarRegistrationRequestDto requestDto = new CarRegistrationRequestDto();
+        ResponseEntity<Object> actual = userService.addCarToRent(1L, requestDto);
+        mockWebServer.shutdown();
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
+    }
+
+    @Test
+    void changeCarStatusWithValidData() throws IOException {
+        mockWebServer.start(8082);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-type", "application/json")
+                .setBody("{\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"carStatus\": \"LOCKED\",\n"
+                        + "    \"carOwnerId\": 1\n"
+                        + "}"));
+        ChangeCarStatusRequestDto requestDto = new ChangeCarStatusRequestDto();
+        requestDto.setStatus("FREE");
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-type", "application/json")
+                .setBody("{\n\"carStatus\": \"FREE\"\n}"));
+        ResponseEntity<Object> actual = userService.changeCarStatus(1L, 1L, requestDto);
+        mockWebServer.shutdown();
+        Assertions.assertEquals(HttpStatus.OK, actual.getStatusCode());
+        Assertions.assertTrue(Objects.requireNonNull(actual.getBody()).toString().contains("FREE"));
+    }
+
+    @Test
+    void changeCarStatusWithRentedCar() throws IOException {
+        mockWebServer.start(8082);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-type", "application/json")
+                .setBody("{\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"carStatus\": \"RENTED\",\n"
+                        + "    \"carOwnerId\": 1\n"
+                        + "}"));
+        ChangeCarStatusRequestDto requestDto = new ChangeCarStatusRequestDto();
+        requestDto.setStatus("FREE");
+        Assertions.assertThrows(CarIsRentedException.class,
+                () -> userService.changeCarStatus(
+                        1L, 1L, requestDto));
+        mockWebServer.shutdown();
+    }
+
+    @Test
+    void changeCarStatusWithBadRequest() throws IOException {
+        mockWebServer.start(8082);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-type", "application/json")
+                .setBody("{\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"carStatus\": \"LOCKED\",\n"
+                        + "    \"carOwnerId\": 1\n"
+                        + "}"));
+        ChangeCarStatusRequestDto requestDto = new ChangeCarStatusRequestDto();
+        requestDto.setStatus("FREE");
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(400));
+        ResponseEntity<Object> actual = userService.changeCarStatus(1L, 1L, requestDto);
+        mockWebServer.shutdown();
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
     }
 }
