@@ -111,25 +111,20 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponseDto getLoginInvalidateUserResponse(User user) {
-        return new LoginResponseDto(
-                user.getEmail(),
-                null,
-                null,
-                "Your email wasn't confirmed yet. "
+        return LoginResponseDto.builder()
+                .email(user.getEmail())
+                .message("Your email wasn't confirmed yet. "
                         + "Confirm using the URL previously sent "
-                        + "to you or use the link below to resend a new one",
-                "localhost:8080/resend?email=" + user.getEmail()
-        );
+                        + "to you or use the link below to resend a new one")
+                .resendUrl("localhost:8080/resend?email=" + user.getEmail())
+                .build();
     }
 
     private LoginResponseDto getLoginBlockedUserResponse(User user) {
-        return new LoginResponseDto(
-                user.getEmail(),
-                null,
-                null,
-                "Your account was blocked. Try contacting the administrator.",
-                null
-        );
+        return LoginResponseDto.builder()
+                .email(user.getEmail())
+                .message("Your account was blocked. Try contacting the administrator.")
+                .build();
     }
 
     private void authenticate(String email, String password) {
@@ -152,13 +147,11 @@ public class AuthServiceImpl implements AuthService {
     private LoginResponseDto getLoginSuccessResponse(
             String email, String jwtToken, String refreshToken
     ) {
-        return new LoginResponseDto(
-                email,
-                jwtToken,
-                refreshToken,
-                null,
-                null
-        );
+        return LoginResponseDto.builder()
+                .email(email)
+                .token(jwtToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     @Override
@@ -226,7 +219,11 @@ public class AuthServiceImpl implements AuthService {
         String email = refreshToken.getUser().getEmail();
         Set<Role> roles = refreshToken.getUser().getRoles();
         String jwtToken = jwtTokenProvider.createToken(email, roles);
-        return new LoginResponseDto(email, jwtToken, refreshToken.getToken(), null, null);
+        return LoginResponseDto.builder()
+                .email(email)
+                .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
+                .build();
     }
 
     private RefreshToken resolveRefreshToken(String token) {
