@@ -268,4 +268,41 @@ public class UserControllerIntegrationTest {
         Balance actualBalance = balanceRepository.findByUserId(userFromDb.getId()).orElseThrow();
         Assertions.assertEquals(0, requestDto.getValue().compareTo(actualBalance.getValue()));
     }
+
+    @Test
+    @Sql(scripts = {"/add_user.sql", "/charge_user_balance200.sql"},
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void fromBalanceEnoughMoneyCase() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        String jwt = jwtTokenProvider
+                .createToken(ADMIN_EMAIL, adminRoleSet);
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        mockMvc.perform(patch(
+                "/users/{id}/from-balance", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+        Balance actualBalance = balanceRepository.findByUserId(userFromDb.getId()).orElseThrow();
+        Assertions.assertEquals(100.00, actualBalance.getValue().doubleValue());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void fromBalanceNotEnoughMoneyCase() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        String jwt = jwtTokenProvider
+                .createToken(ADMIN_EMAIL, adminRoleSet);
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        mockMvc.perform(patch(
+                "/users/{id}/from-balance", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+    }
 }
