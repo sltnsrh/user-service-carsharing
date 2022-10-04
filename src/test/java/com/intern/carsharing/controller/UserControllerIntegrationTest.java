@@ -2,10 +2,12 @@ package com.intern.carsharing.controller;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.repository.RoleRepository;
@@ -32,8 +34,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Testcontainers
 public class UserControllerIntegrationTest {
+    private static final String USER_EMAIL = "user@gmail.com";
+    private static final String ADMIN_EMAIL = "admin@carsharing.com";
+    private static final String NEW_USER_EMAIL = "newuser@gmail.com";
     @Container
-    private static MySQLContainer container = new MySQLContainer<>("mysql:latest");
+    private static final MySQLContainer container = new MySQLContainer<>("mysql:latest");
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -68,8 +73,7 @@ public class UserControllerIntegrationTest {
     @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getUserInfoWithValidUserData() throws Exception {
-        User userFromDb = userRepository.findUserByEmail("user@gmail.com")
-                .orElseThrow(() -> new RuntimeException("No such user in db"));
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         String jwt = jwtTokenProvider
                 .createToken(userFromDb.getEmail(), userFromDb.getRoles());
         MvcResult mvcResult = mockMvc.perform(get("/users/{id}", userFromDb.getId())
@@ -88,8 +92,7 @@ public class UserControllerIntegrationTest {
     @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getUserInfoWithAnotherId() throws Exception {
-        User userFromDb = userRepository.findUserByEmail("user@gmail.com")
-                .orElseThrow(() -> new RuntimeException("No such user in db"));
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         String jwt = jwtTokenProvider
                 .createToken(userFromDb.getEmail(), userFromDb.getRoles());
         mockMvc.perform(get("/users/{id}", 1L)
@@ -101,7 +104,7 @@ public class UserControllerIntegrationTest {
     @Test
     void getUserInfoWithNotExistUserId() throws Exception {
         String jwt = jwtTokenProvider
-                .createToken("admin@carsharing.com",
+                .createToken(ADMIN_EMAIL,
                         Set.of(roleRepository.findByRoleName(RoleName.ADMIN)));
         mockMvc.perform(get("/users/{id}", 1000)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
@@ -113,5 +116,117 @@ public class UserControllerIntegrationTest {
         mockMvc.perform(get("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + "invalid.token"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void userUpdateEmailWithValidDataAndToken() throws Exception {
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
+        userUpdateDto.setEmail(NEW_USER_EMAIL);
+        userUpdateDto.setFirstName(userFromDb.getFirstName());
+        userUpdateDto.setLastName(userFromDb.getLastName());
+        userUpdateDto.setAge(userFromDb.getAge());
+        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        MvcResult mvcResult = mockMvc.perform(put("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk())
+                .andReturn();
+        UserResponseDto actualResponseDto = objectMapper
+                .readValue(
+                        mvcResult.getResponse().getContentAsString(),
+                        UserResponseDto.class
+                );
+        Assertions.assertEquals(userUpdateDto.getEmail(), actualResponseDto.getEmail());
+    }
+
+    @Test
+    void userUpdateWithInvalidId() throws Exception {
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
+        userUpdateDto.setEmail(NEW_USER_EMAIL);
+        userUpdateDto.setFirstName("Bob");
+        userUpdateDto.setLastName("Alister");
+        userUpdateDto.setAge(21);
+        userUpdateDto.setDriverLicence("JHG847JHG");
+        String jwt = jwtTokenProvider
+                .createToken(ADMIN_EMAIL,
+                        Set.of(roleRepository.findByRoleName(RoleName.ADMIN)));
+        mockMvc.perform(put("/users/update/{id}", 2)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void userUpdateWithExistingEmail() throws Exception {
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
+        userUpdateDto.setEmail(ADMIN_EMAIL);
+        userUpdateDto.setFirstName("Bob");
+        userUpdateDto.setLastName("Alister");
+        userUpdateDto.setAge(21);
+        userUpdateDto.setDriverLicence("JHG847JHG");
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        mockMvc.perform(put("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void userUpdateWithExistingEmailAndSameId() throws Exception {
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
+        userUpdateDto.setEmail(userFromDb.getEmail());
+        userUpdateDto.setFirstName(userFromDb.getFirstName());
+        userUpdateDto.setLastName(userFromDb.getLastName());
+        userUpdateDto.setAge(userFromDb.getAge());
+        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        mockMvc.perform(put("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void userUpdateAgeWithValidData() throws Exception {
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
+        userUpdateDto.setEmail(userFromDb.getEmail());
+        userUpdateDto.setFirstName(userFromDb.getFirstName());
+        userUpdateDto.setLastName(userFromDb.getLastName());
+        userUpdateDto.setAge(50);
+        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        MvcResult mvcResult = mockMvc.perform(put("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userUpdateDto)))
+                .andExpect(status().isOk())
+                .andReturn();
+        UserResponseDto actualResponseDto = objectMapper
+                .readValue(
+                        mvcResult.getResponse().getContentAsString(),
+                        UserResponseDto.class
+                );
+        Assertions.assertEquals(userUpdateDto.getAge(), actualResponseDto.getAge());
     }
 }
