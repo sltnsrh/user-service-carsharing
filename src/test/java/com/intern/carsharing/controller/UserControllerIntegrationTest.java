@@ -2,15 +2,18 @@ package com.intern.carsharing.controller;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
-import com.intern.carsharing.repository.RoleRepository;
+import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.util.Set;
@@ -37,12 +40,11 @@ public class UserControllerIntegrationTest {
     private static final String USER_EMAIL = "user@gmail.com";
     private static final String ADMIN_EMAIL = "admin@carsharing.com";
     private static final String NEW_USER_EMAIL = "newuser@gmail.com";
+    private static final Set<Role> adminRoleSet = Set.of(new Role(1L, RoleName.ADMIN));
     @Container
     private static final MySQLContainer container = new MySQLContainer<>("mysql:latest");
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
     @Autowired
@@ -103,9 +105,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     void getUserInfoWithNotExistUserId() throws Exception {
-        String jwt = jwtTokenProvider
-                .createToken(ADMIN_EMAIL,
-                        Set.of(roleRepository.findByRoleName(RoleName.ADMIN)));
+        String jwt = jwtTokenProvider.createToken(ADMIN_EMAIL, adminRoleSet);
         mockMvc.perform(get("/users/{id}", 1000)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isNotFound());
@@ -153,9 +153,7 @@ public class UserControllerIntegrationTest {
         userUpdateDto.setLastName("Alister");
         userUpdateDto.setAge(21);
         userUpdateDto.setDriverLicence("JHG847JHG");
-        String jwt = jwtTokenProvider
-                .createToken(ADMIN_EMAIL,
-                        Set.of(roleRepository.findByRoleName(RoleName.ADMIN)));
+        String jwt = jwtTokenProvider.createToken(ADMIN_EMAIL, adminRoleSet);
         mockMvc.perform(put("/users/update/{id}", 2)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType("application/json")
@@ -228,5 +226,22 @@ public class UserControllerIntegrationTest {
                         UserResponseDto.class
                 );
         Assertions.assertEquals(userUpdateDto.getAge(), actualResponseDto.getAge());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void changeStatusWithValidData() throws Exception {
+        ChangeStatusRequestDto requestDto = new ChangeStatusRequestDto();
+        requestDto.setStatus("blocked");
+        String jwt = jwtTokenProvider.createToken(ADMIN_EMAIL, adminRoleSet);
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        mockMvc.perform(patch("/users/{id}", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+        userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        Assertions.assertEquals(StatusType.BLOCKED, userFromDb.getStatus().getStatusType());
     }
 }
