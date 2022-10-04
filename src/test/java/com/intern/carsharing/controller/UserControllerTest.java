@@ -11,11 +11,9 @@ import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
-import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.BalanceRepository;
-import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.math.BigDecimal;
@@ -45,8 +43,6 @@ class UserControllerTest {
     @MockBean
     private UserRepository userRepository;
     @MockBean
-    private StatusRepository statusRepository;
-    @MockBean
     private BalanceRepository balanceRepository;
     private MockMvc mockMvc;
     private User userFromDb;
@@ -68,32 +64,6 @@ class UserControllerTest {
         userFromDb.setDriverLicence("DFG23K34H");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.USER)));
         userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
-    }
-
-    @Test
-    void changeStatusWithValidData() throws Exception {
-        User admin = new User();
-        admin.setId(2L);
-        admin.setEmail("bob1@gmail.com");
-        admin.setPassword("$2a$10$/xbcBmXcySEczXGThC2Rtu/mR9R9PCkFP5PaCShbGkcwu/frh0mUW");
-        admin.setRoles(Set.of(new Role(2L, RoleName.ADMIN)));
-        admin.setStatus(new Status(1L, StatusType.ACTIVE));
-        Mockito.when(userRepository.findUserByEmail(admin.getEmail()))
-                .thenReturn(Optional.of(admin));
-        Status blocked = new Status(2L, StatusType.BLOCKED);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(userFromDb));
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(userFromDb);
-        Mockito.when(statusRepository.findByStatusType(StatusType.BLOCKED)).thenReturn(blocked);
-
-        ChangeStatusRequestDto requestDto = new ChangeStatusRequestDto();
-        requestDto.setStatus("blocked");
-        String jwt = jwtTokenProvider
-                .createToken(admin.getEmail(), admin.getRoles());
-        mockMvc.perform(patch("/users/{id}", userFromDb.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk());
     }
 
     @Test
