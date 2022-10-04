@@ -7,15 +7,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.BalanceRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
+import java.math.BigDecimal;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +55,8 @@ public class UserControllerIntegrationTest {
     private WebApplicationContext applicationContext;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private BalanceRepository balanceRepository;
     private MockMvc mockMvc;
 
     @DynamicPropertySource
@@ -243,5 +249,23 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk());
         userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         Assertions.assertEquals(StatusType.BLOCKED, userFromDb.getStatus().getStatusType());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void toBalanceWithValidData() throws Exception {
+        BalanceRequestDto requestDto = new BalanceRequestDto();
+        requestDto.setValue(BigDecimal.valueOf(100));
+        User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        String jwt = jwtTokenProvider
+                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
+        mockMvc.perform(patch("/users/{id}/to-balance", userFromDb.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+        Balance actualBalance = balanceRepository.findByUserId(userFromDb.getId()).orElseThrow();
+        Assertions.assertEquals(0, requestDto.getValue().compareTo(actualBalance.getValue()));
     }
 }
