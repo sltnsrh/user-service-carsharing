@@ -3,7 +3,6 @@ package com.intern.carsharing.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,8 +12,6 @@ import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
-import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
-import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.BalanceRepository;
@@ -71,118 +68,6 @@ class UserControllerTest {
         userFromDb.setDriverLicence("DFG23K34H");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.USER)));
         userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
-    }
-
-    @Test
-    void userUpdateWithValidDataAndToken() throws Exception {
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-
-        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
-        userUpdateDto.setEmail("newbob@gmail.com");
-        userUpdateDto.setFirstName(userFromDb.getFirstName());
-        userUpdateDto.setLastName(userFromDb.getLastName());
-        userUpdateDto.setAge(userFromDb.getAge());
-        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
-
-        userFromDb.setEmail(userUpdateDto.getEmail());
-        Mockito.when(userRepository.save(userFromDb))
-                .thenReturn(userFromDb);
-        String jwt = jwtTokenProvider
-                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
-        MvcResult mvcResult = mockMvc.perform(put("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(userUpdateDto)))
-                .andExpect(status().isOk())
-                .andReturn();
-        String actualResponseBody = mvcResult
-                .getResponse().getContentAsString();
-        UserResponseDto actualResponseDto = objectMapper
-                .readValue(actualResponseBody, UserResponseDto.class);
-        Assertions.assertEquals(actualResponseDto.getEmail(), userUpdateDto.getEmail());
-    }
-
-    @Test
-    void userUpdateWithInvalidId() throws Exception {
-        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
-        userUpdateDto.setEmail("newbob@gmail.com");
-        userUpdateDto.setFirstName(userFromDb.getFirstName());
-        userUpdateDto.setLastName(userFromDb.getLastName());
-        userUpdateDto.setAge(userFromDb.getAge());
-        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
-
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.empty());
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
-
-        mockMvc.perform(put("/users/update/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(userUpdateDto)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void userUpdateWithExistingEmail() throws Exception {
-        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
-        userUpdateDto.setEmail("newbob@gmail.com");
-        userUpdateDto.setFirstName(userFromDb.getFirstName());
-        userUpdateDto.setLastName(userFromDb.getLastName());
-        userUpdateDto.setAge(userFromDb.getAge());
-        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
-
-        User anotherUserWithSameEmail = new User();
-        anotherUserWithSameEmail.setId(2L);
-        anotherUserWithSameEmail.setEmail("newbob@gmail.com");
-
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository
-                .findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository
-                .findUserByEmail(userUpdateDto.getEmail()))
-                .thenReturn(Optional.of(anotherUserWithSameEmail));
-        String jwt = jwtTokenProvider
-                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
-
-        mockMvc.perform(put("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(userUpdateDto)))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    void userUpdateWithExistingEmailAndSameId() throws Exception {
-        UserUpdateRequestDto userUpdateDto = new UserUpdateRequestDto();
-        userUpdateDto.setEmail(userFromDb.getEmail());
-        userUpdateDto.setFirstName(userFromDb.getFirstName());
-        userUpdateDto.setLastName(userFromDb.getLastName());
-        userUpdateDto.setAge(userFromDb.getAge());
-        userUpdateDto.setDriverLicence(userFromDb.getDriverLicence());
-
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository
-                        .findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository
-                        .findUserByEmail(userUpdateDto.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken("bob@gmail.com", Set.of(new Role(1L, RoleName.USER)));
-
-        mockMvc.perform(put("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(userUpdateDto)))
-                .andExpect(status().isOk());
     }
 
     @Test
