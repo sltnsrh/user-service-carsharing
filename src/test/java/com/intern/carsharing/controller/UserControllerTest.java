@@ -2,13 +2,11 @@ package com.intern.carsharing.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
@@ -34,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -74,85 +71,6 @@ class UserControllerTest {
         userFromDb.setDriverLicence("DFG23K34H");
         userFromDb.setRoles(Set.of(new Role(1L, RoleName.USER)));
         userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
-    }
-
-    @Test
-    void getUserInfoWithExistUserId() throws Exception {
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
-        MvcResult mvcResult = mockMvc.perform(get("/users/{id}", 1)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
-                .andExpect(status().isOk())
-                .andReturn();
-        String actualResponseBody = mvcResult
-                .getResponse().getContentAsString();
-        UserResponseDto actualDto = objectMapper
-                .readValue(actualResponseBody, UserResponseDto.class);
-        Assertions.assertEquals(actualDto.getId(), userFromDb.getId());
-        Assertions.assertEquals(actualDto.getEmail(), userFromDb.getEmail());
-    }
-
-    @Test
-    void getUserInfoByUserWithAnotherId() throws Exception {
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
-        mockMvc.perform(get("/users/{id}", 2)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void getUserInfoWithNotExistUserId() throws Exception {
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.empty());
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken(userFromDb.getEmail(), Set.of(new Role(1L, RoleName.USER)));
-        mockMvc.perform(get("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void getUserInfoWithExpiredToken() throws Exception {
-        Mockito.when(userRepository.findById(1L))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String expiredJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2IxQGdtYWlsLmNvbSIsInJvbGVz"
-                + "IjpbIlVTRVIiXSwiaWF0IjoxNjYwODQ3NTMzLCJleHAiOjE2NjA4NDc4OTN9"
-                + ".UH-NgeTcF9dFfdVv_GrSmUtjzfN__mgPIS4a3SUsPZk";
-        mockMvc.perform(get("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredJwt))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void getUserInfoWithInvalidToken() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(get("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + "invalid_token"))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-        String actualResponseBody = mvcResult
-                .getResponse().getContentAsString();
-        ApiExceptionObject apiExceptionObject = objectMapper
-                .readValue(actualResponseBody, ApiExceptionObject.class);
-        Assertions.assertEquals(apiExceptionObject.getMessage(), "Jwt token not valid or expired");
-        Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void getUserInfoWithEmptyToken() throws Exception {
-        mockMvc.perform(get("/users/{id}", 1)
-                        .header(HttpHeaders.AUTHORIZATION, ""))
-                .andExpect(status().isUnauthorized());
     }
 
     @Test
