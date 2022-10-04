@@ -67,25 +67,6 @@ class UserControllerTest {
     }
 
     @Test
-    void toBalanceWithValidData() throws Exception {
-        BalanceRequestDto requestDto = new BalanceRequestDto();
-        requestDto.setValue(BigDecimal.valueOf(100));
-        Balance balance = new Balance();
-        balance.setValue(BigDecimal.valueOf(0));
-        Mockito.when(balanceRepository.findByUserId(userFromDb.getId()))
-                .thenReturn(Optional.of(balance));
-        Mockito.when(userRepository.findUserByEmail(userFromDb.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-        String jwt = jwtTokenProvider
-                .createToken(userFromDb.getEmail(), userFromDb.getRoles());
-        mockMvc.perform(patch("/users/{id}/to-balance", userFromDb.getId())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     void fromBalanceEnoughMoneyCase() throws Exception {
         BalanceRequestDto requestDto = new BalanceRequestDto();
         requestDto.setValue(BigDecimal.valueOf(100));
