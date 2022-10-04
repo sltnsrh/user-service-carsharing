@@ -141,6 +141,39 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void loginWithUserWithStatusInvalidate() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
+        user.setStatus(new Status(1L, StatusType.INVALIDATE));
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        LoginRequestDto loginRequestDto = new LoginRequestDto();
+        loginRequestDto.setEmail("bob@gmail.com");
+        loginRequestDto.setPassword("password");
+        LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions
+                .assertTrue(loginResponseDto.getMessage().contains("Your email wasn't confirmed"));
+    }
+
+    @Test
+    void loginWithUserWithStatusBlocked() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
+        user.setStatus(new Status(1L, StatusType.BLOCKED));
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        LoginRequestDto loginRequestDto = new LoginRequestDto();
+        loginRequestDto.setEmail("bob@gmail.com");
+        loginRequestDto.setPassword("password");
+        LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertTrue(loginResponseDto.getMessage().contains("Your account was blocked"));
+    }
+
+    @Test
     void confirmWithValidConfirmationToken() {
         User user = new User();
         user.setEmail("bob@gmail.com");
