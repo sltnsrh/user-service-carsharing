@@ -20,7 +20,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class IntegrationTest {
     protected static final String USER_EMAIL = "user@gmail.com";
     @Container
-    private static final MySQLContainer<?> container = new MySQLContainer<>("mysql:latest");
+    private static final MySQLContainer<?> container = new MySQLContainer<>("mysql:latest")
+            .withReuse(true);
     @Autowired
     protected ObjectMapper objectMapper;
     protected MockMvc mockMvc;

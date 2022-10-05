@@ -7,16 +7,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intern.carsharing.exception.ApiExceptionObject;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
-import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
-import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
@@ -27,7 +24,6 @@ import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -35,9 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -65,118 +59,6 @@ class AuthenticationControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-    }
-
-    @Test
-    void loginWithValidData() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("password");
-
-        User userFromDb = new User();
-        userFromDb.setId(1L);
-        userFromDb.setEmail("bob@gmail.com");
-        userFromDb.setPassword("$2a$10$/xbcBmXcySEczXGThC2Rtu/mR9R9PCkFP5PaCShbGkcwu/frh0mUW");
-        userFromDb.setFirstName("bob");
-        userFromDb.setLastName("Alister");
-        userFromDb.setAge(21);
-        userFromDb.setDriverLicence("234WER234");
-        userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
-
-        Mockito.when(userRepository.findUserByEmail(any()))
-                .thenReturn(Optional.of(userFromDb));
-        Mockito.when((userRepository.findById(1L))).thenReturn(Optional.of(userFromDb));
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken("refreshtoken");
-        Mockito.when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
-
-        MvcResult mvcResult = mockMvc.perform(post("/login")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(loginRequestDto)))
-                .andExpect(status().isOk())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        LoginResponseDto loginResponseDto = objectMapper
-                .readValue(actualResponseBody, LoginResponseDto.class);
-
-        Assertions.assertEquals(loginRequestDto.getEmail(), loginResponseDto.getEmail());
-        Assertions.assertFalse(loginResponseDto.getToken().isBlank());
-        Assertions.assertFalse(loginResponseDto.getRefreshToken().isBlank());
-    }
-
-    @Test
-    void loginWithInvalidPassword() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("passwor");
-
-        User userFromDb = new User();
-        userFromDb.setId(1L);
-        userFromDb.setEmail("bob@gmail.com");
-        userFromDb.setPassword("$2a$10$/xbcBmXcySEczXGThC2Rtu/mR9R9PCkFP5PaCShbGkcwu/frh0mUW");
-        userFromDb.setFirstName("bob");
-        userFromDb.setLastName("Alister");
-        userFromDb.setAge(21);
-        userFromDb.setDriverLicence("234WER234");
-        userFromDb.setRoles(Set.of(new Role(1L, RoleName.valueOf("ADMIN"))));
-        userFromDb.setStatus(new Status(1L, StatusType.ACTIVE));
-
-        Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
-                .thenReturn(Optional.of(userFromDb));
-
-        MvcResult mvcResult = mockMvc.perform(post("/login")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(loginRequestDto)))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        ApiExceptionObject apiExceptionObject = objectMapper
-                .readValue(actualResponseBody, ApiExceptionObject.class);
-        Assertions.assertEquals(apiExceptionObject.getMessage(), "Wrong password, try again");
-        Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void loginWithEmptyEmail() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("");
-        loginRequestDto.setPassword("password");
-
-        MvcResult mvcResult = mockMvc.perform(post("/login")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(loginRequestDto)))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        ApiExceptionObject apiExceptionObject = objectMapper
-                .readValue(actualResponseBody, ApiExceptionObject.class);
-
-        Assertions.assertEquals(apiExceptionObject.getMessage(),
-                "Email field can't be empty or blank");
-        Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void loginWithNotExistEmail() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("password");
-        Mockito.when(userRepository.findUserByEmail(loginRequestDto.getEmail()))
-                .thenReturn(Optional.empty());
-
-        MvcResult mvcResult = mockMvc.perform(post("/login")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(loginRequestDto)))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        ApiExceptionObject apiExceptionObject = objectMapper
-                .readValue(actualResponseBody, ApiExceptionObject.class);
-
-        Assertions.assertEquals(apiExceptionObject.getMessage(),
-                "User with email: bob@gmail.com doesn't exist");
-        Assertions.assertEquals(apiExceptionObject.getHttpStatus(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
