@@ -23,4 +23,22 @@ class JwtTokenProviderTest {
         Assertions.assertNotEquals(actual, null);
         Assertions.assertFalse(actual.isBlank());
     }
+
+    @Test
+    void resolveTokenWithValidData() {
+        String actual = jwtTokenProvider.resolveToken("Bearer token");
+        Assertions.assertEquals("token", actual);
+    }
+
+    @Test
+    void resolveTokenWithNullToken() {
+        String actual = jwtTokenProvider.resolveToken((null));
+        Assertions.assertNull(actual);
+    }
+
+    @Test
+    void resolveTokenWithNotBearerStart() {
+        String actual = jwtTokenProvider.resolveToken("token");
+        Assertions.assertNull(actual);
+    }
 }
