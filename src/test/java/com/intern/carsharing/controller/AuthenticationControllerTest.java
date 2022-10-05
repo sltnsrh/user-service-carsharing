@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
-import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
@@ -16,13 +15,10 @@ import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
-import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
-import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
-import com.intern.carsharing.repository.BalanceRepository;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.StatusRepository;
@@ -61,8 +57,6 @@ class AuthenticationControllerTest {
     private StatusRepository statusRepository;
     @MockBean
     private RefreshTokenRepository refreshTokenRepository;
-    @MockBean
-    private BalanceRepository balanceRepository;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -71,121 +65,6 @@ class AuthenticationControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-    }
-
-    @Test
-    void registerWithValidData() throws Exception {
-        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
-        requestUserDto.setEmail("bob@gmail.com");
-        requestUserDto.setPassword("password");
-        requestUserDto.setRepeatPassword("password");
-        requestUserDto.setFirstName("Bob");
-        requestUserDto.setLastName("Alister");
-        requestUserDto.setAge(21);
-        requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRole("USER");
-
-        UserResponseDto userResponseDto = new UserResponseDto();
-        userResponseDto.setId(1L);
-        userResponseDto.setEmail("bob@gmail.com");
-        userResponseDto.setPassword("password");
-        userResponseDto.setFirstName("Bob");
-        userResponseDto.setLastName("Alister");
-        userResponseDto.setAge(21);
-        userResponseDto.setDriverLicence("DFG23K34H");
-        userResponseDto.setRoles(Set.of("USER"));
-        userResponseDto.setStatus("ACTIVE");
-
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("bob@gmail.com");
-        user.setPassword("password");
-        user.setFirstName("Bob");
-        user.setLastName("Alister");
-        user.setAge(21);
-        user.setDriverLicence("DFG23K34H");
-        user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
-        user.setStatus(new Status(1L, StatusType.ACTIVE));
-
-        Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
-                .thenReturn(Optional.empty());
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
-        ConfirmationToken confirmationToken = new ConfirmationToken();
-        confirmationToken.setToken("confirmationtoken");
-        Mockito.when(confirmationTokenRepository.save(any(ConfirmationToken.class)))
-                .thenReturn(confirmationToken);
-        Mockito.when(balanceRepository.save(any(Balance.class))).thenReturn(null);
-
-        mockMvc.perform(post("/registration")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(requestUserDto)))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    void registerWithNotMatchPassword() throws Exception {
-        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
-        requestUserDto.setEmail("bob@gmail.com");
-        requestUserDto.setPassword("passwor");
-        requestUserDto.setRepeatPassword("password");
-        requestUserDto.setFirstName("Bob");
-        requestUserDto.setLastName("Alister");
-        requestUserDto.setAge(21);
-        requestUserDto.setDriverLicence("DFG23K34H");
-
-        MvcResult mvcResult = mockMvc.perform(post("/registration")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestUserDto)))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        Assertions.assertTrue(actualResponseBody.contains("Passwords do not match"));
-    }
-
-    @Test
-    void registerExistUser() throws Exception {
-        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
-        requestUserDto.setEmail("bob@gmail.com");
-        requestUserDto.setPassword("password");
-        requestUserDto.setRepeatPassword("password");
-        requestUserDto.setFirstName("Bob");
-        requestUserDto.setLastName("Alister");
-        requestUserDto.setAge(21);
-        requestUserDto.setDriverLicence("DFG23K34H");
-        requestUserDto.setRole("USER");
-
-        Mockito.when(userRepository.findUserByEmail(requestUserDto.getEmail()))
-                .thenReturn(Optional.of(new User()));
-        MvcResult mvcResult = mockMvc.perform(post("/registration")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestUserDto)))
-                .andExpect(status().isConflict())
-                .andReturn();
-        String actualResponseBody = mvcResult
-                .getResponse().getContentAsString();
-        Assertions.assertTrue(actualResponseBody
-                .contains("User with email bob@gmail.com already exists"));
-    }
-
-    @Test
-    void registerWithAgeLessThan21() throws Exception {
-        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
-        requestUserDto.setEmail("bob@gmail.com");
-        requestUserDto.setPassword("password");
-        requestUserDto.setRepeatPassword("password");
-        requestUserDto.setFirstName("Bob");
-        requestUserDto.setLastName("Alister");
-        requestUserDto.setAge(20);
-        requestUserDto.setDriverLicence("DFG23K34H");
-
-        MvcResult mvcResult = mockMvc.perform(post("/registration")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestUserDto)))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-        Assertions.assertTrue(actualResponseBody
-                .contains("Your age must be at least 21 years old"));
     }
 
     @Test
