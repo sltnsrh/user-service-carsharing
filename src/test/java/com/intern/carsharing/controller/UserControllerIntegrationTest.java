@@ -44,14 +44,14 @@ public class UserControllerIntegrationTest extends IntegrationTest {
         User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         String jwt = jwtTokenProvider
                 .createToken(userFromDb.getEmail(), userFromDb.getRoles());
-        MvcResult mvcResult = mockMvc.perform(get("/users/{id}", userFromDb.getId())
+        String responseJson = mockMvc.perform(get("/users/{id}", userFromDb.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isOk())
-                .andReturn();
-        String actualResponseBody = mvcResult
-                .getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         UserResponseDto actualDto = objectMapper
-                .readValue(actualResponseBody, UserResponseDto.class);
+                .readValue(responseJson, UserResponseDto.class);
         Assertions.assertEquals(userFromDb.getId(), actualDto.getId());
         Assertions.assertEquals(userFromDb.getEmail(), actualDto.getEmail());
     }
@@ -81,6 +81,12 @@ public class UserControllerIntegrationTest extends IntegrationTest {
     void getUserInfoWithInvalidToken() throws Exception {
         mockMvc.perform(get("/users/{id}", 1)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + "invalid.token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getUserInfoWithoutJwtToken() throws Exception {
+        mockMvc.perform(get("/users/{id}", 1))
                 .andExpect(status().isUnauthorized());
     }
 
