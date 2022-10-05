@@ -8,12 +8,15 @@ import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
+import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.jdbc.Sql;
 
 class AuthControllerIntegrationTest extends IntegrationTest {
@@ -174,5 +177,28 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void validateTokenWithValidTokenAndActiveUser() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        String loginResponseJson = mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        LoginResponseDto responseDto =
+                objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
+        ValidateTokenRequestDto requestDto =
+                new ValidateTokenRequestDto("Bearer " + responseDto.getToken());
+        mockMvc.perform(get("/validate-token")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
     }
 }

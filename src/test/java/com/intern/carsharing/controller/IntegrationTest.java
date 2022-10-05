@@ -12,21 +12,23 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @Testcontainers
 public abstract class IntegrationTest {
     protected static final String USER_EMAIL = "user@gmail.com";
-    @Container
-    private static final MySQLContainer<?> container = new MySQLContainer<>("mysql:latest")
-            .withReuse(true);
+    private static final MySQLContainer<?> container;
     @Autowired
     protected ObjectMapper objectMapper;
     protected MockMvc mockMvc;
     @Autowired
     private WebApplicationContext context;
+
+    static {
+        container = new MySQLContainer<>("mysql:latest");
+        container.start();
+    }
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {
