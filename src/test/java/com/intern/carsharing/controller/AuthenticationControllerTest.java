@@ -18,7 +18,6 @@ import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
-import com.intern.carsharing.repository.StatusRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
@@ -48,8 +47,6 @@ class AuthenticationControllerTest {
     @MockBean
     private ConfirmationTokenRepository confirmationTokenRepository;
     @MockBean
-    private StatusRepository statusRepository;
-    @MockBean
     private RefreshTokenRepository refreshTokenRepository;
     private MockMvc mockMvc;
 
@@ -59,28 +56,6 @@ class AuthenticationControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-    }
-
-    @Test
-    void confirmEmailWithValidToken() throws Exception {
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("bob@gmail.com");
-        ConfirmationToken confirmationToken = new ConfirmationToken();
-        confirmationToken.setUser(user);
-        confirmationToken.setId(1L);
-        confirmationToken.setCreatedAt(LocalDateTime.now());
-        confirmationToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
-        confirmationToken.setToken("confirmationtoken");
-        Mockito.when(confirmationTokenRepository.findByToken("confirmationtoken"))
-                .thenReturn(Optional.of(confirmationToken));
-        Mockito.when(confirmationTokenRepository.save(any())).thenReturn(null);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        Mockito.when(statusRepository.findByStatusType(StatusType.ACTIVE))
-                .thenReturn(new Status(1L, StatusType.ACTIVE));
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(null);
-        mockMvc.perform(get("/confirm?token=confirmationtoken"))
-                .andExpect(status().isOk());
     }
 
     @Test

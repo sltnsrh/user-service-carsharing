@@ -1,15 +1,24 @@
 package com.intern.carsharing.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
+import com.intern.carsharing.repository.ConfirmationTokenRepository;
+import com.intern.carsharing.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
 class AuthControllerIntegrationTest extends IntegrationTest {
+    @Autowired
+    private ConfirmationTokenRepository confirmationTokenRepository;
+    @Autowired
+    private UserRepository userRepository;
     private RegistrationUserRequestDto registrationRequestDto;
 
     @BeforeEach()
@@ -100,5 +109,22 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void confirmEmailWithValidToken() throws Exception {
+        mockMvc.perform(post("/registration")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(registrationRequestDto)))
+                .andExpect(status().isCreated());
+        User user = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
+        String confirmationToken = confirmationTokenRepository
+                .findAllByUser(user).orElseThrow()
+                .stream()
+                .findFirst().orElseThrow()
+                .getToken();
+        mockMvc.perform(get("/confirm?token=" + confirmationToken))
+                .andExpect(status().isOk());
     }
 }
