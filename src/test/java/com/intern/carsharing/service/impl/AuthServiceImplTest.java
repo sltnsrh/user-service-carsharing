@@ -141,6 +141,34 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void loginWithValidDataAndNotExistingOldRefreshToken() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("bob@gmail.com");
+        user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
+        user.setStatus(new Status(1L, StatusType.ACTIVE));
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(jwtTokenProvider.createToken("bob@gmail.com", user.getRoles()))
+                .thenReturn("token");
+        Mockito.when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                "bob@gmail.com", "password"))).thenReturn(null);
+        Mockito.when(refreshTokenService.findByUser(any(User.class))).thenReturn(null);
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenService.create(user.getId())).thenReturn(refreshToken);
+
+        LoginRequestDto loginRequestDto = new LoginRequestDto();
+        loginRequestDto.setEmail("bob@gmail.com");
+        loginRequestDto.setPassword("password");
+
+        LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertEquals("token", loginResponseDto.getToken());
+        Assertions.assertEquals("refreshtoken", loginResponseDto.getRefreshToken());
+
+    }
+
+    @Test
     void loginWithUserWithStatusInvalidate() {
         User user = new User();
         user.setId(1L);
@@ -251,6 +279,25 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.findAllByUser(user))
                 .thenReturn(List.of(new ConfirmationToken()));
         Mockito.doNothing().when(confirmationTokenService).delete(any(ConfirmationToken.class));
+        String actual = authService.resendEmail("bob@gmail.com");
+        Assertions.assertTrue(actual.contains("Thanks for the registration"));
+    }
+
+    @Test
+    void resendEmailWithExistAndInvalidateEmailAndNotExistingOldTokenInDb() {
+        User user = new User();
+        user.setStatus(new Status(1L, StatusType.INVALIDATE));
+
+        ConfirmationToken confirmationToken = new ConfirmationToken();
+        confirmationToken.setToken("confirmationToken");
+        confirmationToken.setId(1L);
+        confirmationToken.setCreatedAt(LocalDateTime.now().minusMinutes(15));
+        confirmationToken.setExpiredAt(LocalDateTime.now());
+        confirmationToken.setUser(user);
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(confirmationTokenService.create(user)).thenReturn(confirmationToken);
+        Mockito.when(confirmationTokenService.findAllByUser(user))
+                .thenReturn(null);
         String actual = authService.resendEmail("bob@gmail.com");
         Assertions.assertTrue(actual.contains("Thanks for the registration"));
     }
