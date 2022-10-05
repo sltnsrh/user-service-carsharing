@@ -1,12 +1,10 @@
 package com.intern.carsharing.controller;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
@@ -22,60 +20,23 @@ import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import java.math.BigDecimal;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
-@Testcontainers
-public class UserControllerIntegrationTest {
+public class UserControllerIntegrationTest extends IntegrationTest {
     private static final String USER_EMAIL = "user@gmail.com";
     private static final String ADMIN_EMAIL = "admin@carsharing.com";
     private static final String NEW_USER_EMAIL = "newuser@gmail.com";
     private static final Set<Role> adminRoleSet = Set.of(new Role(1L, RoleName.ADMIN));
-    @Container
-    private static final MySQLContainer container = new MySQLContainer<>("mysql:latest");
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
     @Autowired
-    private WebApplicationContext applicationContext;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private BalanceRepository balanceRepository;
-    private MockMvc mockMvc;
-
-    @DynamicPropertySource
-    public static void overrideProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", container::getJdbcUrl);
-        registry.add("spring.datasource.username", container::getUsername);
-        registry.add("spring.datasource.password", container::getPassword);
-        registry.add("spring.flyway.url", container::getJdbcUrl);
-        registry.add("spring.flyway.username", container::getUsername);
-        registry.add("spring.flyway.password", container::getPassword);
-    }
-
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(applicationContext)
-                .apply(springSecurity())
-                .build();
-    }
 
     @Test
     @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
