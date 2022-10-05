@@ -127,4 +127,15 @@ class AuthControllerIntegrationTest extends IntegrationTest {
         mockMvc.perform(get("/confirm?token=" + confirmationToken))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void resendEmailWithValidData() throws Exception {
+        mockMvc.perform(post("/registration")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(registrationRequestDto)))
+                .andExpect(status().isCreated());
+        mockMvc.perform(get("/resend?email=" + USER_EMAIL))
+                .andExpect(status().isOk());
+    }
 }

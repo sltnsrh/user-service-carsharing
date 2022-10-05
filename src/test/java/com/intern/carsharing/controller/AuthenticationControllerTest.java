@@ -1,13 +1,11 @@
 package com.intern.carsharing.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
@@ -16,7 +14,6 @@ import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
-import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
@@ -45,8 +42,6 @@ class AuthenticationControllerTest {
     @MockBean
     private UserRepository userRepository;
     @MockBean
-    private ConfirmationTokenRepository confirmationTokenRepository;
-    @MockBean
     private RefreshTokenRepository refreshTokenRepository;
     private MockMvc mockMvc;
 
@@ -56,21 +51,6 @@ class AuthenticationControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-    }
-
-    @Test
-    void resendEmailWithValidData() throws Exception {
-        User user = new User();
-        user.setEmail("bob@gmail.com");
-        user.setStatus(new Status(1L, StatusType.INVALIDATE));
-        Mockito.when(userRepository.findUserByEmail("bob@gmail.com")).thenReturn(Optional.of(user));
-        ConfirmationToken confirmationToken = new ConfirmationToken();
-        confirmationToken.setToken("confirmationtoken");
-        Mockito.when(confirmationTokenRepository.save(any(ConfirmationToken.class)))
-                .thenReturn(confirmationToken);
-        mockMvc.perform(get("/resend?email=bob@gmail.com"))
-                .andExpect(status().isOk());
-
     }
 
     @Test
