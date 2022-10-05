@@ -4,11 +4,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.intern.carsharing.model.User;
+import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
+import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
-import com.intern.carsharing.repository.UserRepository;
+import com.intern.carsharing.repository.RefreshTokenRepository;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
     @Autowired
-    private UserRepository userRepository;
+    private RefreshTokenRepository refreshTokenRepository;
     private RegistrationUserRequestDto registrationRequestDto;
 
     @BeforeEach()
@@ -118,11 +120,8 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(registrationRequestDto)))
                 .andExpect(status().isCreated());
-        User user = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         String confirmationToken = confirmationTokenRepository
-                .findAllByUser(user).orElseThrow()
-                .stream()
-                .findFirst().orElseThrow()
+                .findByUserEmail(USER_EMAIL).orElseThrow()
                 .getToken();
         mockMvc.perform(get("/confirm?token=" + confirmationToken))
                 .andExpect(status().isOk());
@@ -137,5 +136,43 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                 .andExpect(status().isCreated());
         mockMvc.perform(get("/resend?email=" + USER_EMAIL))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void refreshTokenWithValidRefreshToken() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk());
+        String refreshToken = refreshTokenRepository.findByUserEmail(USER_EMAIL).orElseThrow()
+                .getToken();
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto(refreshToken);
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void refreshTokenWithExpiredRefreshToken() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk());
+        RefreshToken refreshToken = refreshTokenRepository
+                .findByUserEmail(USER_EMAIL).orElseThrow();
+        refreshToken.setExpiredAt(LocalDateTime.now().minusHours(1));
+        refreshTokenRepository.save(refreshToken);
+        RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto(refreshToken.getToken());
+        mockMvc.perform(post("/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isForbidden());
     }
 }
