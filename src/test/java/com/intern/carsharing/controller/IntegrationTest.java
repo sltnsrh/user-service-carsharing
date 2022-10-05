@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Testcontainers
 public abstract class IntegrationTest {
+    protected static final String USER_EMAIL = "user@gmail.com";
     @Container
     private static final MySQLContainer<?> container = new MySQLContainer<>("mysql:latest");
     @Autowired

@@ -27,7 +27,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MvcResult;
 
 public class UserControllerIntegrationTest extends IntegrationTest {
-    private static final String USER_EMAIL = "user@gmail.com";
     private static final String ADMIN_EMAIL = "admin@carsharing.com";
     private static final String NEW_USER_EMAIL = "newuser@gmail.com";
     private static final Set<Role> adminRoleSet = Set.of(new Role(1L, RoleName.ADMIN));
