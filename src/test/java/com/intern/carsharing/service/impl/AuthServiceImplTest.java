@@ -127,17 +127,16 @@ class AuthServiceImplTest {
                 "bob@gmail.com", "password"))).thenReturn(null);
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken("refreshtoken");
+        Mockito.when(refreshTokenService.findByUser(any(User.class)))
+                .thenReturn(List.of(new RefreshToken()));
         Mockito.when(refreshTokenService.create(user.getId())).thenReturn(refreshToken);
-
         LoginRequestDto loginRequestDto = new LoginRequestDto();
         loginRequestDto.setEmail("bob@gmail.com");
         loginRequestDto.setPassword("password");
-
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
         Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
         Assertions.assertEquals("token", loginResponseDto.getToken());
         Assertions.assertEquals("refreshtoken", loginResponseDto.getRefreshToken());
-
     }
 
     @Test

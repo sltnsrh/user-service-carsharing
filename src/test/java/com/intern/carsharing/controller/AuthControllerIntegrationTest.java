@@ -13,6 +13,8 @@ import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,32 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void loginWithValidDataAndCheckIfOldRefreshTokenWasDeleted() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk());
+        List<String> oldTokensList = refreshTokenRepository
+                .findAllByUserEmail(USER_EMAIL).orElseThrow()
+                .stream()
+                .map(RefreshToken::getToken)
+                .toList();
+        mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk());
+        List<String> newTokensList = refreshTokenRepository
+                .findAllByUserEmail(USER_EMAIL).orElseThrow()
+                .stream()
+                .map(RefreshToken::getToken)
+                .toList();
+        Assertions.assertFalse(oldTokensList.stream().anyMatch(newTokensList::contains));
     }
 
     @Test
