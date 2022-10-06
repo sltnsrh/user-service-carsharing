@@ -240,6 +240,9 @@ public class AuthServiceImpl implements AuthService {
         if (jwtTokenProvider.validateToken(token)) {
             String userName = jwtTokenProvider.getUserName(token);
             User user = userService.findByEmail(userName);
+            if (user == null) {
+                throw new UsernameNotFoundException("Can't find user with username: " + userName);
+            }
             if (!user.getStatus().getStatusType().equals(StatusType.ACTIVE)) {
                 throw new AuthTokenException("Actual user isn't active: " + userName);
             }
