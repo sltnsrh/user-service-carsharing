@@ -195,7 +195,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                 objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
         ValidateTokenRequestDto requestDto =
                 new ValidateTokenRequestDto("Bearer " + responseDto.getToken());
-        mockMvc.perform(get("/validate-token")
+        mockMvc.perform(post("/validate-token")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))

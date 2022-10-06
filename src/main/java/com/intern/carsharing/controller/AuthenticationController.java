@@ -137,7 +137,7 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "403", description = "Forbidden")
             }
     )
-    @GetMapping("/validate-token")
+    @PostMapping("/validate-token")
     public ResponseEntity<ValidateTokenResponseDto> validateToken(
             @Valid @RequestBody ValidateTokenRequestDto requestDto
     ) {
