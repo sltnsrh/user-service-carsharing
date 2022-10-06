@@ -41,7 +41,7 @@ public abstract class IntegrationTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())

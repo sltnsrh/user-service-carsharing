@@ -28,7 +28,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,9 +66,8 @@ class CarClientServiceImplTest {
         OrderDto order = new OrderDto();
         order.setCarId(1L);
         order.setPrice(BigDecimal.valueOf(100));
-        Mockito.when(backofficeClientService.getAllCarOrders(
-                any(LinkedMultiValueMap.class), any(Long.class)
-        )).thenReturn(List.of(order));
+        Mockito.when(backofficeClientService.getAllCarOrders(any(), any()))
+                .thenReturn(List.of(order));
         ResponseEntity<Object> actual = carClientService.getCarStatistics(
                 1L, 1L, null, null, null);
         Assertions.assertEquals(HttpStatus.OK, actual.getStatusCode());
