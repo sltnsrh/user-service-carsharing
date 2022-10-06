@@ -13,12 +13,12 @@ public class WebClientConfig {
     private String carServiceHost;
 
     @Bean
-    public WebClient backofficeServiceClient() {
+    public WebClient backofficeClient() {
         return WebClient.create(backOfficeServiceHost);
     }
 
     @Bean
-    public WebClient carServiceClient() {
+    public WebClient carClient() {
         return WebClient.create(carServiceHost);
     }
 }

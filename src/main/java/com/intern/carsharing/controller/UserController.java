@@ -7,6 +7,8 @@ import com.intern.carsharing.model.dto.request.ChangeStatusRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
 import com.intern.carsharing.model.dto.response.UserResponseDto;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.service.BackofficeClientService;
+import com.intern.carsharing.service.CarClientService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
+    private final BackofficeClientService backofficeClientService;
+    private final CarClientService carClientService;
 
     @Operation(
             summary = "Get a user info",
@@ -189,7 +193,8 @@ public class UserController {
             @RequestParam(required = false)
             String carType
     ) {
-        return new ResponseEntity<>(userService.getTripStatistics(id, dateStart, dateEnd, carType),
+        return new ResponseEntity<>(backofficeClientService
+                .getTripStatistics(id, dateStart, dateEnd, carType),
                 HttpStatus.OK);
     }
 
@@ -217,7 +222,7 @@ public class UserController {
             String dateEnd,
             @RequestParam(required = false)
             String carType) {
-        return userService.getCarStatistics(userId, carId, dateStart, dateEnd, carType);
+        return carClientService.getCarStatistics(userId, carId, dateStart, dateEnd, carType);
     }
 
     @Operation(
@@ -239,7 +244,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestBody CarRegistrationRequestDto requestDto
     ) {
-        return userService.addCarToRent(userId, requestDto);
+        return carClientService.addCarToRent(userId, requestDto);
     }
 
     @Operation(
@@ -263,6 +268,6 @@ public class UserController {
             @PathVariable("carId") Long carId,
             @RequestBody ChangeCarStatusRequestDto requestDto
     ) {
-        return userService.changeCarStatus(userId, carId, requestDto);
+        return carClientService.changeCarStatus(userId, carId, requestDto);
     }
 }
