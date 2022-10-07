@@ -36,7 +36,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
         registrationRequestDto.setFirstName("Bob");
         registrationRequestDto.setLastName("Alister");
         registrationRequestDto.setAge(21);
-        registrationRequestDto.setDriverLicence("DFG23K34H");
+        registrationRequestDto.setDriverLicence("DFG123456");
         registrationRequestDto.setRole("USER");
     }
 

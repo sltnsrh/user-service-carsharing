@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.Data;
 
@@ -43,7 +44,8 @@ public class RegistrationUserRequestDto {
     private int age;
     @ApiModelProperty(notes = "Consists of 9 characters", example = "HKJ423KJU", required = true)
     @NotEmpty(message = "Driver licence field can't be empty")
-    @Size(min = 9, max = 9, message = "The driver's license number must contain 9 characters")
+    @Pattern(regexp = "[A-Z]{3}\\d{6}",
+            message = "A driver's license number must match the pattern: ABC123456")
     private String driverLicence;
     private String status;
     @NotNull(message = "Role field must not be null")
