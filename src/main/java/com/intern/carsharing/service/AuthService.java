@@ -4,6 +4,7 @@ import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
+import com.intern.carsharing.model.dto.response.EmailConfirmationResponseDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
@@ -13,7 +14,7 @@ public interface AuthService {
 
     LoginResponseDto login(LoginRequestDto requestDto);
 
-    String confirm(String token);
+    EmailConfirmationResponseDto confirmEmail(String token);
 
     RegistrationResponseDto resendEmail(String email);
 

@@ -15,6 +15,7 @@ import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
+import com.intern.carsharing.model.dto.response.EmailConfirmationResponseDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
@@ -214,10 +215,8 @@ class AuthServiceImplTest {
         confirmationToken.setUser(user);
         Mockito.when(confirmationTokenService
                 .findByToken("confirmationToken")).thenReturn(confirmationToken);
-        String actual = authService.confirm("confirmationToken");
-        Assertions.assertEquals(
-                actual, "Your email address: bob@gmail.com was confirmed successfully!"
-        );
+        EmailConfirmationResponseDto actual = authService.confirmEmail("confirmationToken");
+        Assertions.assertTrue(actual.getMessage().contains("confirmed successfully"));
     }
 
     @Test
@@ -225,7 +224,7 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService
                 .findByToken("confirmationToken")).thenReturn(null);
         assertThrows(ConfirmationTokenInvalidException.class,
-                () -> authService.confirm("confirmationToken"));
+                () -> authService.confirmEmail("confirmationToken"));
     }
 
     @Test
@@ -243,7 +242,7 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.findByToken("confirmationToken"))
                 .thenReturn(confirmationToken);
         assertThrows(ConfirmationTokenInvalidException.class,
-                () -> authService.confirm("confirmationToken"));
+                () -> authService.confirmEmail("confirmationToken"));
     }
 
     @Test
@@ -259,8 +258,8 @@ class AuthServiceImplTest {
         confirmationToken.setUser(user);
         Mockito.when(confirmationTokenService.findByToken("confirmationToken"))
                 .thenReturn(confirmationToken);
-        String actual = authService.confirm("confirmationToken");
-        Assertions.assertTrue(actual.contains("Confirmation token was expired"));
+        EmailConfirmationResponseDto actual = authService.confirmEmail("confirmationToken");
+        Assertions.assertTrue(actual.getMessage().contains("token was expired"));
     }
 
     @Test
@@ -373,7 +372,6 @@ class AuthServiceImplTest {
         ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
         requestDto.setToken(token);
         ValidateTokenResponseDto actual = authService.validateAuthToken(requestDto);
-        System.out.println("");
         Assertions.assertEquals(1L, actual.getUserId());
         Assertions.assertEquals(List.of("USER"), actual.getRoles());
     }

@@ -12,6 +12,7 @@ import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
+import com.intern.carsharing.model.dto.response.EmailConfirmationResponseDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
@@ -156,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public String confirm(String token) {
+    public EmailConfirmationResponseDto confirmEmail(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.findByToken(token);
         if (confirmationToken == null) {
             throw new ConfirmationTokenInvalidException("Confirmation token doesn't exist.");
@@ -172,15 +173,23 @@ public class AuthServiceImpl implements AuthService {
         }
         confirmationTokenService.setConfirmDate(confirmationToken);
         userService.changeStatus(confirmationToken.getUser().getId(), StatusType.ACTIVE);
-        return "Your email address: " + email + " was confirmed successfully!";
+        return getConfirmedSuccessfullyMessage(email);
     }
 
-    private String getTokenExpiredMessage(String email) {
-        return "Confirmation token was expired."
-                + System.lineSeparator()
-                + "Follow the link to get a new verification mail: "
-                + System.lineSeparator()
-                + "localhost:8080/resend?email=" + email;
+    private EmailConfirmationResponseDto getTokenExpiredMessage(String email) {
+        EmailConfirmationResponseDto responseDto = new EmailConfirmationResponseDto();
+        responseDto.setEmail(email);
+        responseDto.setMessage("Confirmation token was expired. "
+                + "Click resend email to get a new verification mail.");
+        return responseDto;
+    }
+
+    private EmailConfirmationResponseDto getConfirmedSuccessfullyMessage(String email) {
+        EmailConfirmationResponseDto responseDto = new EmailConfirmationResponseDto();
+        responseDto.setEmail(email);
+        responseDto.setMessage("Your email address was confirmed successfully! "
+                + "Now you can log in to start work.");
+        return responseDto;
     }
 
     @Override
