@@ -162,7 +162,7 @@ public class UserController {
             })
     @PatchMapping("/{id}/from-balance")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> fromBalance(
+    public ResponseEntity<Object> fromBalance(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @Valid @RequestBody BalanceRequestDto requestDto

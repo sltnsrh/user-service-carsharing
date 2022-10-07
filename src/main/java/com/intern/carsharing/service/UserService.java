@@ -19,5 +19,5 @@ public interface UserService {
 
     BalanceResponseDto toBalance(Long id, BalanceRequestDto balanceRequestDto);
 
-    String fromBalance(Long id, BalanceRequestDto balanceRequestDto);
+    BalanceResponseDto fromBalance(Long id, BalanceRequestDto balanceRequestDto);
 }

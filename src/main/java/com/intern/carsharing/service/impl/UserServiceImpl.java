@@ -84,14 +84,16 @@ public class UserServiceImpl implements UserService {
         Balance balance = balanceService.findByUserId(id);
         balance.setValue(balance.getValue().add(balanceRequestDto.getValue()));
         balanceService.save(balance);
-        return getBalanceSuccessResponse(id, balanceRequestDto.getValue(), balance.getCurrency());
+        String message = "Balance was credited successfully.";
+        return getBalanceSuccessResponse(
+                id, message, balanceRequestDto.getValue(), balance.getCurrency());
     }
 
     private BalanceResponseDto getBalanceSuccessResponse(
-            long userId, BigDecimal value, String currency) {
+            long userId, String message, BigDecimal value, String currency) {
         BalanceResponseDto responseDto = new BalanceResponseDto();
         responseDto.setUserId(userId);
-        responseDto.setMessage("Balance was credited successfully.");
+        responseDto.setMessage(message);
         responseDto.setValue(value);
         responseDto.setCurrency(currency);
         return responseDto;
@@ -99,16 +101,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String fromBalance(Long id, BalanceRequestDto balanceRequestDto) {
+    public BalanceResponseDto fromBalance(Long id, BalanceRequestDto balanceRequestDto) {
         Balance balance = balanceService.findByUserId(id);
         BigDecimal currentValue = balance.getValue();
         BigDecimal requestValue = balanceRequestDto.getValue();
         if (currentValue.compareTo(requestValue) < 0) {
-            return "Not enough money on balance for a transaction";
+            String message = "Not enough money for a transaction";
+            return getBalanceSuccessResponse(id, message, requestValue, balance.getCurrency());
         }
         balance.setValue(currentValue.subtract(requestValue));
         balanceService.save(balance);
-        return requestValue + " " + balance.getCurrency()
-                + " were debited from the balance of the user with id " + id;
+        String message = "Balance was debited successfully.";
+        return getBalanceSuccessResponse(id, message, requestValue, balance.getCurrency());
     }
 }
