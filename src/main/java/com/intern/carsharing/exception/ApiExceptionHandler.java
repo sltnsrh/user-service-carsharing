@@ -1,6 +1,7 @@
 package com.intern.carsharing.exception;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -20,42 +21,35 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiExceptionObject> handleUserExistException(
             RuntimeException e
     ) {
-        HttpStatus conflict = HttpStatus.CONFLICT;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                conflict,
-                ZonedDateTime.now().toString()
+        HttpStatus status = HttpStatus.CONFLICT;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
+    }
+
+    private ApiExceptionObject getApiExceptionObject(String message, HttpStatus status) {
+        return new ApiExceptionObject(
+                message,
+                status,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
-        return new ResponseEntity<>(apiExceptionObject, conflict);
     }
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ApiExceptionObject> handleBadRequestException(
             MethodArgumentNotValidException e
     ) {
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         String errorMessages = e.getBindingResult().getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                errorMessages,
-                badRequest,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, badRequest);
+        return new ResponseEntity<>(getApiExceptionObject(errorMessages, status), status);
     }
 
     @ExceptionHandler(value = {UsernameNotFoundException.class})
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
             UsernameNotFoundException e
     ) {
-        HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                unauthorized,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, unauthorized);
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
     }
 
     @ExceptionHandler(value = {
@@ -63,25 +57,15 @@ public class ApiExceptionHandler {
             CarNotFoundException.class
     })
     public ResponseEntity<ApiExceptionObject> handleUserNorFoundException(RuntimeException e) {
-        HttpStatus notFound = HttpStatus.NOT_FOUND;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                notFound,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, notFound);
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
     public ResponseEntity<ApiExceptionObject> handleIllegalArgumentException(
             IllegalArgumentException e) {
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                badRequest,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, badRequest);
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
     }
 
     @ExceptionHandler(value = {
@@ -92,13 +76,8 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiExceptionObject> handleLimitedPermissionException(
             RuntimeException e
     ) {
-        HttpStatus forbidden = HttpStatus.FORBIDDEN;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                forbidden,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, forbidden);
+        HttpStatus status = HttpStatus.FORBIDDEN;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
     }
 
     @ExceptionHandler(value = {
@@ -108,12 +87,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiExceptionObject> handleConfirmationTokenInvalidException(
             RuntimeException e
     ) {
-        HttpStatus accepted = HttpStatus.ACCEPTED;
-        ApiExceptionObject apiExceptionObject = new ApiExceptionObject(
-                e.getMessage(),
-                accepted,
-                ZonedDateTime.now().toString()
-        );
-        return new ResponseEntity<>(apiExceptionObject, accepted);
+        HttpStatus status = HttpStatus.ACCEPTED;
+        return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);
     }
 }

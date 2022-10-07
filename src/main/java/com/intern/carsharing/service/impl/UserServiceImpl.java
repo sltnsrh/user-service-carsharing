@@ -14,8 +14,6 @@ import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
