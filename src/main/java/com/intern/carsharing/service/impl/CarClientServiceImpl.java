@@ -101,7 +101,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         checkIfCarNotRented(car);
         try {
             Object response = carClient
-                    .post()
+                    .patch()
                     .uri(uriBuilder -> uriBuilder
                             .path("/cars/status/" + carId)
                             .queryParam("carStatus", requestDto.getStatus())
