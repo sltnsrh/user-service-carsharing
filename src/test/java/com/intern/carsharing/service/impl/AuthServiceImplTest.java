@@ -14,7 +14,6 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
-import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.EmailConfirmationResponseDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
@@ -370,9 +369,7 @@ class AuthServiceImplTest {
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
         Mockito.when(jwtTokenProvider.getRoleNames(
                 new ArrayList<>(user.getRoles()))).thenReturn(List.of("USER"));
-        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
-        requestDto.setToken(token);
-        ValidateTokenResponseDto actual = authService.validateAuthToken(requestDto);
+        ValidateTokenResponseDto actual = authService.validateAuthToken(token);
         Assertions.assertEquals(1L, actual.getUserId());
         Assertions.assertEquals(List.of("USER"), actual.getRoles());
     }
@@ -389,10 +386,8 @@ class AuthServiceImplTest {
         user.setRoles(Set.of(new Role(1L, RoleName.USER)));
         user.setStatus(new Status(1L, StatusType.BLOCKED));
         Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
-        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
-        requestDto.setToken(token);
         Assertions.assertThrows(AuthTokenException.class,
-                () -> authService.validateAuthToken(requestDto));
+                () -> authService.validateAuthToken(token));
     }
 
     @Test
@@ -401,9 +396,7 @@ class AuthServiceImplTest {
         String tokenAfterResolve = "token";
         Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
         Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(false);
-        ValidateTokenRequestDto requestDto = new ValidateTokenRequestDto();
-        requestDto.setToken(token);
         Assertions.assertThrows(AuthTokenException.class,
-                () -> authService.validateAuthToken(requestDto));
+                () -> authService.validateAuthToken(token));
     }
 }

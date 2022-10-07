@@ -8,7 +8,6 @@ import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
-import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.repository.ConfirmationTokenRepository;
 import com.intern.carsharing.repository.RefreshTokenRepository;
@@ -221,12 +220,8 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                 .getContentAsString();
         LoginResponseDto responseDto =
                 objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
-        ValidateTokenRequestDto requestDto =
-                new ValidateTokenRequestDto("Bearer " + responseDto.getToken());
-        mockMvc.perform(post("/validate-auth-token")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken())
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(requestDto)))
+        mockMvc.perform(get("/validate-auth-token")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken()))
                 .andExpect(status().isOk());
     }
 }

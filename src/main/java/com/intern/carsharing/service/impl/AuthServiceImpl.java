@@ -11,7 +11,6 @@ import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
-import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.EmailConfirmationResponseDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
@@ -246,8 +245,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ValidateTokenResponseDto validateAuthToken(ValidateTokenRequestDto requestDto) {
-        String token = jwtTokenProvider.resolveToken(requestDto.getToken());
+    public ValidateTokenResponseDto validateAuthToken(String bearerToken) {
+        String token = jwtTokenProvider.resolveToken(bearerToken);
         if (jwtTokenProvider.validateToken(token)) {
             String userName = jwtTokenProvider.getUserName(token);
             User user = userService.findByEmail(userName);
@@ -263,6 +262,6 @@ public class AuthServiceImpl implements AuthService {
             responseDto.setRoles(roles);
             return responseDto;
         }
-        throw new AuthTokenException("Jwt auth token not valid: " + requestDto.getToken());
+        throw new AuthTokenException("Jwt auth token not valid: " + bearerToken);
     }
 }
