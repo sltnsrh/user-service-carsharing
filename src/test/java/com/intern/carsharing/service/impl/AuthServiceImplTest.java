@@ -16,6 +16,7 @@ import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
@@ -108,9 +109,9 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.create(userAfterSave)).thenReturn(confirmationToken);
         Mockito.when(balanceService.createNewBalance(any(User.class))).thenReturn(null);
 
-        String actual = authService.register(requestUserDto);
-        Assertions.assertFalse(actual.isBlank());
-        Assertions.assertTrue(actual.contains("confirm?token=token"));
+        RegistrationResponseDto actual = authService.register(requestUserDto);
+        Assertions.assertNotNull(actual);
+        Assertions.assertTrue(actual.getMessage().contains("Thanks for the registration"));
     }
 
     @Test
@@ -278,8 +279,8 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.findAllByUser(user))
                 .thenReturn(List.of(new ConfirmationToken()));
         Mockito.doNothing().when(confirmationTokenService).delete(any(ConfirmationToken.class));
-        String actual = authService.resendEmail("bob@gmail.com");
-        Assertions.assertTrue(actual.contains("Thanks for the registration"));
+        RegistrationResponseDto actual = authService.resendEmail("bob@gmail.com");
+        Assertions.assertNull(actual.getUrl());
     }
 
     @Test
@@ -297,8 +298,8 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.create(user)).thenReturn(confirmationToken);
         Mockito.when(confirmationTokenService.findAllByUser(user))
                 .thenReturn(null);
-        String actual = authService.resendEmail("bob@gmail.com");
-        Assertions.assertTrue(actual.contains("Thanks for the registration"));
+        RegistrationResponseDto actual = authService.resendEmail("bob@gmail.com");
+        Assertions.assertNull(actual.getUrl());
     }
 
     @Test

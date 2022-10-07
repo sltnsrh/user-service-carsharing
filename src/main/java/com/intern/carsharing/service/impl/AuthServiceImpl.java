@@ -13,6 +13,7 @@ import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.request.ValidateTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
+import com.intern.carsharing.model.dto.response.RegistrationResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
@@ -52,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public String register(RegistrationUserRequestDto requestUserDto) {
+    public RegistrationResponseDto register(RegistrationUserRequestDto requestUserDto) {
         String email = requestUserDto.getEmail();
         User user = userService.findByEmail(email);
         if (user != null) {
@@ -70,14 +71,13 @@ public class AuthServiceImpl implements AuthService {
         return userService.save(user);
     }
 
-    private String getRegistrationResponseMessage(String token) {
-        return "Thanks for the registration!"
-                + System.lineSeparator()
+    private RegistrationResponseDto getRegistrationResponseMessage(String token) {
+        RegistrationResponseDto responseDto = new RegistrationResponseDto();
+        responseDto.setMessage("Thanks for the registration! "
                 + "The confirmation mail was sent on your email. "
-                + System.lineSeparator()
-                + "Please, confirm your email address to activate your account."
-                + System.lineSeparator().repeat(2)
-                + "localhost:8080/confirm?token=" + token;
+                + "Please, confirm your email address to activate your account.");
+        responseDto.setUrl("localhost:8080/confirm?token=" + token);
+        return responseDto;
     }
 
     @Override
@@ -185,7 +185,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public String resendEmail(String email) {
+    public RegistrationResponseDto resendEmail(String email) {
         User user = userService.findByEmail(email);
         if (user == null) {
             throw new UsernameNotFoundException("User with email: " + email + " doesn't exist");
