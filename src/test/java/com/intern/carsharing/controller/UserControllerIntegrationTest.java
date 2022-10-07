@@ -124,7 +124,7 @@ public class UserControllerIntegrationTest extends IntegrationTest {
         userUpdateDto.setFirstName("Bob");
         userUpdateDto.setLastName("Alister");
         userUpdateDto.setAge(21);
-        userUpdateDto.setDriverLicence("JHG847JHG");
+        userUpdateDto.setDriverLicence("JHG847999");
         String jwt = jwtTokenProvider.createToken(ADMIN_EMAIL, adminRoleSet);
         mockMvc.perform(put("/users/update/{id}", 2)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -142,7 +142,7 @@ public class UserControllerIntegrationTest extends IntegrationTest {
         userUpdateDto.setFirstName("Bob");
         userUpdateDto.setLastName("Alister");
         userUpdateDto.setAge(21);
-        userUpdateDto.setDriverLicence("JHG847JHG");
+        userUpdateDto.setDriverLicence("JHG847999");
         User userFromDb = userRepository.findUserByEmail(USER_EMAIL).orElseThrow();
         String jwt = jwtTokenProvider
                 .createToken(userFromDb.getEmail(), userFromDb.getRoles());
