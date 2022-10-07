@@ -117,6 +117,7 @@ public class AuthServiceImpl implements AuthService {
 
     private LoginResponseDto getLoginInvalidateUserResponse(User user) {
         return LoginResponseDto.builder()
+                .userId(user.getId())
                 .email(user.getEmail())
                 .message("Your email wasn't confirmed yet. "
                         + "Confirm using the URL previously sent "
@@ -127,6 +128,7 @@ public class AuthServiceImpl implements AuthService {
 
     private LoginResponseDto getLoginBlockedUserResponse(User user) {
         return LoginResponseDto.builder()
+                .userId(user.getId())
                 .email(user.getEmail())
                 .message("Your account was blocked. Try contacting the administrator.")
                 .build();
