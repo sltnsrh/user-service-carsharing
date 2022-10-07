@@ -263,7 +263,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void resendEmailWithExistAndInvalidateEmail() {
+    void resendEmailWithExistUserAndInvalidateEmail() {
         User user = new User();
         user.setStatus(new Status(1L, StatusType.INVALIDATE));
 
@@ -279,7 +279,7 @@ class AuthServiceImplTest {
                 .thenReturn(List.of(new ConfirmationToken()));
         Mockito.doNothing().when(confirmationTokenService).delete(any(ConfirmationToken.class));
         RegistrationResponseDto actual = authService.resendEmail("bob@gmail.com");
-        Assertions.assertNull(actual.getUrl());
+        Assertions.assertNotNull(actual.getUrl());
     }
 
     @Test
@@ -298,7 +298,7 @@ class AuthServiceImplTest {
         Mockito.when(confirmationTokenService.findAllByUser(user))
                 .thenReturn(null);
         RegistrationResponseDto actual = authService.resendEmail("bob@gmail.com");
-        Assertions.assertNull(actual.getUrl());
+        Assertions.assertNotNull(actual.getUrl());
     }
 
     @Test
@@ -324,6 +324,7 @@ class AuthServiceImplTest {
         requestDto.setToken("refreshtoken");
 
         User user = new User();
+        user.setId(1L);
         user.setEmail("bob@gmail.com");
         user.setRoles(Set.of(new Role(1L, RoleName.USER)));
 

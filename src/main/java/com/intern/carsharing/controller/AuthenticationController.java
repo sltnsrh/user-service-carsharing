@@ -79,9 +79,9 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized")
             }
     )
-    @GetMapping("/confirm")
-    public ResponseEntity<Object> confirm(@RequestParam String token) {
-        return new ResponseEntity<>(authService.confirm(token), HttpStatus.OK);
+    @GetMapping("/confirm-email")
+    public ResponseEntity<Object> confirmEmail(@RequestParam String token) {
+        return new ResponseEntity<>(authService.confirmEmail(token), HttpStatus.OK);
     }
 
     @Operation(
@@ -95,8 +95,8 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized")
             }
     )
-    @GetMapping("/resend")
-    public ResponseEntity<Object> resend(@RequestParam String email) {
+    @GetMapping("/resend-confirmation-email")
+    public ResponseEntity<Object> resendEmail(@RequestParam String email) {
         return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);
     }
 
@@ -137,7 +137,7 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = "403", description = "Forbidden")
             }
     )
-    @PostMapping("/validate-token")
+    @PostMapping("/validate-auth-token")
     public ResponseEntity<ValidateTokenResponseDto> validateToken(
             @Valid @RequestBody ValidateTokenRequestDto requestDto
     ) {

@@ -24,8 +24,8 @@ public class SecurityConfig {
             "/webjars/**",
             "/registration",
             "/login",
-            "/confirm",
-            "/resend",
+            "/confirm-email",
+            "/resend-confirmation-email",
             "/refresh-token"
     };
     private final JwtTokenFilter jwtTokenFilter;

@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
         responseDto.setMessage("Thanks for the registration! "
                 + "The confirmation mail was sent on your email. "
                 + "Please, confirm your email address to activate your account.");
-        responseDto.setUrl("localhost:8080/confirm?token=" + token);
+        responseDto.setUrl("localhost:8080/confirm-email?token=" + token);
         return responseDto;
     }
 
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         checkAndDeleteOldRefreshTokens(user);
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
-        return getLoginSuccessResponse(email, jwtToken, refreshToken.getToken());
+        return getLoginSuccessResponse(user.getId(), email, jwtToken, refreshToken.getToken());
     }
 
     private void checkIfUserExists(User user, String emailFromRequest) {
@@ -117,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
                 .message("Your email wasn't confirmed yet. "
                         + "Confirm using the URL previously sent "
                         + "to you or use the link below to resend a new one")
-                .resendUrl("localhost:8080/resend?email=" + user.getEmail())
+                .resendUrl("localhost:8080/resend-confirmation-email?email=" + user.getEmail())
                 .build();
     }
 
@@ -146,9 +146,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponseDto getLoginSuccessResponse(
-            String email, String jwtToken, String refreshToken
+            long userId, String email, String jwtToken, String refreshToken
     ) {
         return LoginResponseDto.builder()
+                .userId(userId)
                 .email(email)
                 .token(jwtToken)
                 .refreshToken(refreshToken)
@@ -229,6 +230,7 @@ public class AuthServiceImpl implements AuthService {
         Set<Role> roles = refreshToken.getUser().getRoles();
         String jwtToken = jwtTokenProvider.createToken(email, roles);
         return LoginResponseDto.builder()
+                .userId(refreshToken.getUser().getId())
                 .email(email)
                 .token(jwtToken)
                 .refreshToken(refreshToken.getToken())

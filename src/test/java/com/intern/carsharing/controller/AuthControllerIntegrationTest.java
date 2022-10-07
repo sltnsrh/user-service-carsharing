@@ -154,7 +154,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
         String confirmationToken = confirmationTokenRepository
                 .findByUserEmail(USER_EMAIL).orElseThrow()
                 .getToken();
-        mockMvc.perform(get("/confirm?token=" + confirmationToken))
+        mockMvc.perform(get("/confirm-email?token=" + confirmationToken))
                 .andExpect(status().isOk());
     }
 
@@ -165,7 +165,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(registrationRequestDto)))
                 .andExpect(status().isCreated());
-        mockMvc.perform(get("/resend?email=" + USER_EMAIL))
+        mockMvc.perform(get("/resend-confirmation-email?email=" + USER_EMAIL))
                 .andExpect(status().isOk());
     }
 
@@ -223,7 +223,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                 objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
         ValidateTokenRequestDto requestDto =
                 new ValidateTokenRequestDto("Bearer " + responseDto.getToken());
-        mockMvc.perform(post("/validate-token")
+        mockMvc.perform(post("/validate-auth-token")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
