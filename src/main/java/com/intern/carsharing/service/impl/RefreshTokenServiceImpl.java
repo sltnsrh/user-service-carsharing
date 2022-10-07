@@ -33,7 +33,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             token = UUID.randomUUID().toString();
         }
         refreshToken.setToken(token);
-        refreshToken.setExpiredAt(LocalDateTime.now(ZoneId.systemDefault())
+        refreshToken.setExpiredAt(LocalDateTime.now()
                 .plusMinutes(expirationPeriod));
         return tokenRepository.save(refreshToken);
     }

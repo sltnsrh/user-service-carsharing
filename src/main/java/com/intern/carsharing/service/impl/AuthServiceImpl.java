@@ -238,7 +238,7 @@ public class AuthServiceImpl implements AuthService {
 
     private RefreshToken resolveRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenService.findByToken(token);
-        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now(ZoneId.systemDefault()))) {
+        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
         }
         return refreshToken;
