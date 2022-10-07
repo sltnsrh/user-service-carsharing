@@ -7,7 +7,6 @@ import com.intern.carsharing.repository.RefreshTokenRepository;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler(value = {UserAlreadyExistException.class})
+    @ExceptionHandler(value = {
+            UserAlreadyExistException.class,
+            DriverLicenceAlreadyExistException.class
+    })
     public ResponseEntity<ApiExceptionObject> handleUserExistException(
-            UserAlreadyExistException e
+            RuntimeException e
     ) {
         HttpStatus conflict = HttpStatus.CONFLICT;
         ApiExceptionObject apiExceptionObject = new ApiExceptionObject(

@@ -14,6 +14,8 @@ import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.StatusService;
 import com.intern.carsharing.service.UserService;
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,5 +115,11 @@ public class UserServiceImpl implements UserService {
         balanceService.save(balance);
         String message = "Balance was debited successfully.";
         return getBalanceResponse(id, message, requestValue, balance.getCurrency());
+    }
+
+    @Override
+    public User findByDriverLicence(String driverLicence) {
+        return userRepository.findUserByDriverLicence(driverLicence)
+                .orElse(null);
     }
 }

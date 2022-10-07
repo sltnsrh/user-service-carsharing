@@ -2,6 +2,7 @@ package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
+import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
 import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.ConfirmationToken;
@@ -24,7 +25,6 @@ import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +58,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userService.findByEmail(email);
         if (user != null) {
             throw new UserAlreadyExistException("User with email " + email + " already exists");
+        }
+        user = userService.findByDriverLicence(requestUserDto.getDriverLicence());
+        if (user != null) {
+            throw new DriverLicenceAlreadyExistException(requestUserDto.getDriverLicence()
+                    + " licence number is already exists.");
         }
         user = getUserFromDtoWithEncodedPassword(requestUserDto);
         balanceService.createNewBalance(user);

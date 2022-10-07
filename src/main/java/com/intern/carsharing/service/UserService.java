@@ -9,6 +9,8 @@ import com.intern.carsharing.model.util.StatusType;
 public interface UserService {
     User findByEmail(String email);
 
+    User findByDriverLicence(String driverLicence);
+
     User save(User user);
 
     User get(Long id);
