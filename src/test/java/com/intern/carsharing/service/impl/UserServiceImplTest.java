@@ -2,6 +2,7 @@ package com.intern.carsharing.service.impl;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
 import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
@@ -50,6 +51,47 @@ class UserServiceImplTest {
         Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
         User actual = userService.update(1L, userUpdateRequestDto);
         Assertions.assertEquals(userUpdateRequestDto.getEmail(), actual.getEmail());
+    }
+
+    @Test
+    void updateWithExistingDriverLicence() {
+        String newDriverLicence = "CBA123456";
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto();
+        userUpdateRequestDto.setEmail("bob@gmail.com");
+        userUpdateRequestDto.setDriverLicence(newDriverLicence);
+        User userToUpdate = new User();
+        userToUpdate.setId(1L);
+        userToUpdate.setEmail("bob@gmail.com");
+        userToUpdate.setDriverLicence("ABC123456");
+        User userWithSameLicence = new User();
+        userWithSameLicence.setId(2L);
+        userWithSameLicence.setEmail("user@gmail.com");
+        userWithSameLicence.setDriverLicence(newDriverLicence);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
+        Mockito.when(userRepository.findUserByEmail(userUpdateRequestDto.getEmail()))
+                .thenReturn(Optional.of(userToUpdate));
+        Mockito.when(userRepository.findUserByDriverLicence(newDriverLicence))
+                .thenReturn(Optional.of(userWithSameLicence));
+        Assertions.assertThrows(DriverLicenceAlreadyExistException.class,
+                () -> userService.update(userToUpdate.getId(), userUpdateRequestDto));
+    }
+
+    @Test
+    void updateWithExistingDriverLicenceInSameUser() {
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto();
+        userUpdateRequestDto.setEmail("bob@gmail.com");
+        userUpdateRequestDto.setDriverLicence("ABC123456");
+        User userToUpdate = new User();
+        userToUpdate.setId(1L);
+        userToUpdate.setEmail("bob@gmail.com");
+        userToUpdate.setDriverLicence("ABC123456");
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
+        Mockito.when(userRepository.findUserByEmail(userUpdateRequestDto.getEmail()))
+                .thenReturn(Optional.of(userToUpdate));
+        Mockito.when(userRepository.findUserByDriverLicence(userToUpdate.getDriverLicence()))
+                .thenReturn(Optional.of(userToUpdate));
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(userToUpdate);
+        Assertions.assertNotNull(userService.update(userToUpdate.getId(), userUpdateRequestDto));
     }
 
     @Test
