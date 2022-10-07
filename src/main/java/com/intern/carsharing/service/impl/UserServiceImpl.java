@@ -85,11 +85,11 @@ public class UserServiceImpl implements UserService {
         balance.setValue(balance.getValue().add(balanceRequestDto.getValue()));
         balanceService.save(balance);
         String message = "Balance was credited successfully.";
-        return getBalanceSuccessResponse(
+        return getBalanceResponse(
                 id, message, balanceRequestDto.getValue(), balance.getCurrency());
     }
 
-    private BalanceResponseDto getBalanceSuccessResponse(
+    private BalanceResponseDto getBalanceResponse(
             long userId, String message, BigDecimal value, String currency) {
         BalanceResponseDto responseDto = new BalanceResponseDto();
         responseDto.setUserId(userId);
@@ -107,11 +107,11 @@ public class UserServiceImpl implements UserService {
         BigDecimal requestValue = balanceRequestDto.getValue();
         if (currentValue.compareTo(requestValue) < 0) {
             String message = "Not enough money for a transaction";
-            return getBalanceSuccessResponse(id, message, requestValue, balance.getCurrency());
+            return getBalanceResponse(id, message, requestValue, balance.getCurrency());
         }
         balance.setValue(currentValue.subtract(requestValue));
         balanceService.save(balance);
         String message = "Balance was debited successfully.";
-        return getBalanceSuccessResponse(id, message, requestValue, balance.getCurrency());
+        return getBalanceResponse(id, message, requestValue, balance.getCurrency());
     }
 }
