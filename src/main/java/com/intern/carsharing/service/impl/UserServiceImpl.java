@@ -1,5 +1,6 @@
 package com.intern.carsharing.service.impl;
 
+import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.exception.UserNotFoundException;
 import com.intern.carsharing.model.Balance;
@@ -47,17 +48,26 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update(Long id, UserUpdateRequestDto updateDto) {
         User user = get(id);
-        checkIfUserWithNewEmailExists(id, updateDto);
+        checkIfUserWithNewEmailNotExists(id, updateDto);
+        checkIfDriverLicenceNotExists(id, updateDto.getDriverLicence());
         setUpdates(user, updateDto);
         return userRepository.save(user);
     }
 
-    private void checkIfUserWithNewEmailExists(Long id, UserUpdateRequestDto updateDto) {
+    private void checkIfUserWithNewEmailNotExists(long id, UserUpdateRequestDto updateDto) {
         String newEmail = updateDto.getEmail();
         User userWithSameNewEmail = findByEmail(newEmail);
         if (userWithSameNewEmail != null && !userWithSameNewEmail.getId().equals(id)) {
             throw new UserAlreadyExistException("User with email " + newEmail
                     + " already exists");
+        }
+    }
+
+    private void checkIfDriverLicenceNotExists(long id, String driverLicence) {
+        User user = findByDriverLicence(driverLicence);
+        if (user != null && !user.getId().equals(id)) {
+            throw new DriverLicenceAlreadyExistException(driverLicence
+                    + " licence number is already exists.");
         }
     }
 
