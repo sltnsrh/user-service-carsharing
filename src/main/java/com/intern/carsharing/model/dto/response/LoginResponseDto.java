@@ -15,6 +15,8 @@ import lombok.Setter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponseDto {
+    @ApiModelProperty(example = "1")
+    private long userId;
     @ApiModelProperty(example = "bob@gmail.com")
     private String email;
     @ApiModelProperty(example = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2IxQGdtYWlsLmNvbSIsInJvbGV"
