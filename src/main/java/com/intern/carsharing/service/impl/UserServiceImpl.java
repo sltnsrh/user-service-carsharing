@@ -6,6 +6,7 @@ import com.intern.carsharing.model.Balance;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.BalanceResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -78,13 +79,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String toBalance(Long id, BalanceRequestDto balanceRequestDto) {
+    public BalanceResponseDto toBalance(Long id, BalanceRequestDto balanceRequestDto) {
         permissionService.check(id);
         Balance balance = balanceService.findByUserId(id);
         balance.setValue(balance.getValue().add(balanceRequestDto.getValue()));
         balanceService.save(balance);
-        return balanceRequestDto.getValue() + " " + balance.getCurrency()
-            + " has been credited to the balance of the user with id " + id;
+        return getBalanceSuccessResponse(id, balanceRequestDto.getValue(), balance.getCurrency());
+    }
+
+    private BalanceResponseDto getBalanceSuccessResponse(
+            long userId, BigDecimal value, String currency) {
+        BalanceResponseDto responseDto = new BalanceResponseDto();
+        responseDto.setUserId(userId);
+        responseDto.setMessage("Balance was credited successfully.");
+        responseDto.setValue(value);
+        responseDto.setCurrency(currency);
+        return responseDto;
     }
 
     @Override

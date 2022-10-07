@@ -7,6 +7,7 @@ import com.intern.carsharing.model.Status;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.BalanceResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.repository.UserRepository;
 import com.intern.carsharing.service.BalanceService;
@@ -74,8 +75,9 @@ class UserServiceImplTest {
         Mockito.when(balanceService.findByUserId(1L)).thenReturn(balance);
         Mockito.when(balanceService.save(any(Balance.class))).thenReturn(null);
         Mockito.mock(permissionService.getClass());
-        String actual = userService.toBalance(1L, balanceRequestDto);
+        BalanceResponseDto actual = userService.toBalance(1L, balanceRequestDto);
         Assertions.assertNotNull(actual);
+        Assertions.assertTrue(actual.getMessage().contains("successfully"));
     }
 
     @Test

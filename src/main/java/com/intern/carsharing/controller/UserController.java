@@ -140,7 +140,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Not Found")
             })
     @PatchMapping("/{id}/to-balance")
-    public ResponseEntity<String> toBalance(
+    public ResponseEntity<Object> toBalance(
             @Parameter(description = "User id", example = "1")
             @PathVariable("id") Long id,
             @Valid @RequestBody BalanceRequestDto requestDto

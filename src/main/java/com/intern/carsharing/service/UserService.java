@@ -3,6 +3,7 @@ package com.intern.carsharing.service;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.BalanceRequestDto;
 import com.intern.carsharing.model.dto.request.UserUpdateRequestDto;
+import com.intern.carsharing.model.dto.response.BalanceResponseDto;
 import com.intern.carsharing.model.util.StatusType;
 
 public interface UserService {
@@ -16,7 +17,7 @@ public interface UserService {
 
     User changeStatus(Long id, StatusType statusType);
 
-    String toBalance(Long id, BalanceRequestDto balanceRequestDto);
+    BalanceResponseDto toBalance(Long id, BalanceRequestDto balanceRequestDto);
 
     String fromBalance(Long id, BalanceRequestDto balanceRequestDto);
 }
