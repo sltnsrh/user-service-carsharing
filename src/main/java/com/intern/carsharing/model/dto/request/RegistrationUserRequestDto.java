@@ -42,7 +42,7 @@ public class RegistrationUserRequestDto {
     @NotNull(message = "Age field can't be null")
     @Min(value = 21, message = "Your age must be at least 21 years old")
     private int age;
-    @ApiModelProperty(notes = "Consists of 9 characters", example = "HKJ423KJU", required = true)
+    @ApiModelProperty(notes = "Consists of 9 characters", example = "HKJ423234", required = true)
     @NotEmpty(message = "Driver licence field can't be empty")
     @Pattern(regexp = "[A-Z]{3}\\d{6}",
             message = "A driver's license number must match the pattern: ABC123456")
