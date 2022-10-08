@@ -54,4 +54,21 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public List<RefreshToken> findByUser(User user) {
         return tokenRepository.findAllByUser(user).orElse(null);
     }
+
+    @Override
+    public RefreshToken resolveRefreshToken(String token) {
+        RefreshToken refreshToken = findByToken(token);
+        if (refreshToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new RefreshTokenException("Refresh token was expired. Please, make a new login.");
+        }
+        return refreshToken;
+    }
+
+    @Override
+    public void checkAndDeleteOldRefreshTokens(User user) {
+        List<RefreshToken> refreshTokenList = findByUser(user);
+        if (refreshTokenList != null) {
+            refreshTokenList.forEach(this::delete);
+        }
+    }
 }
