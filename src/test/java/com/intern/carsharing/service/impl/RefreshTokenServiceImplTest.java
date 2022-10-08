@@ -57,4 +57,12 @@ class RefreshTokenServiceImplTest {
         RefreshToken actual = refreshTokenService.create(1L);
         Assertions.assertEquals(token, actual.getToken());
     }
+
+    @Test
+    void checkAndDeleteOldRefreshTokensWithNoTokensToDelete() {
+        Mockito.when(refreshTokenRepository.findAllByUser(any(User.class)))
+                        .thenReturn(Optional.empty());
+        Assertions.assertDoesNotThrow(
+                () -> refreshTokenService.checkAndDeleteOldRefreshTokens(new User()));
+    }
 }
