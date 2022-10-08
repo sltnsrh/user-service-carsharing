@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
+import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
 import com.intern.carsharing.exception.RefreshTokenException;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
@@ -112,6 +113,20 @@ class AuthServiceImplTest {
         RegistrationResponseDto actual = authService.register(requestUserDto);
         Assertions.assertNotNull(actual);
         Assertions.assertTrue(actual.getMessage().contains("Thanks for the registration"));
+    }
+
+    @Test
+    void registerWithExistingDriverLicence() {
+        RegistrationUserRequestDto requestUserDto = new RegistrationUserRequestDto();
+        requestUserDto.setEmail("bob@gmail.com");
+        requestUserDto.setDriverLicence("DFG23K34H");
+        User userWithSameDriverLicence = new User();
+        userWithSameDriverLicence.setDriverLicence("DFG23K34H");
+        Mockito.when(userService.findByEmail(requestUserDto.getEmail())).thenReturn(null);
+        Mockito.when(userService.findByDriverLicence(requestUserDto.getDriverLicence()))
+                .thenReturn(userWithSameDriverLicence);
+        Assertions.assertThrows(DriverLicenceAlreadyExistException.class,
+                () -> authService.register(requestUserDto));
     }
 
     @Test
@@ -397,6 +412,18 @@ class AuthServiceImplTest {
         Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
         Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(false);
         Assertions.assertThrows(AuthTokenException.class,
+                () -> authService.validateAuthToken(token));
+    }
+
+    @Test
+    void validateAuthTokenWithNotExistUser() {
+        String token = "Bearer token";
+        String tokenAfterResolve = "token";
+        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
+        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
+        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(null);
+        Assertions.assertThrows(UsernameNotFoundException.class,
                 () -> authService.validateAuthToken(token));
     }
 }
