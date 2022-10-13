@@ -16,7 +16,7 @@ services:
       - db
     build: ./
     ports:
-      - "8080:8080"
+      - "8085:8080"
     environment:
       - spring.datasource.url=jdbc:mysql://userServiceDb:3306/user-service-db?serverTimezone=UTC
       - spring.datasource.username=root
@@ -26,3 +26,10 @@ services:
       - spring.flyway.user=root
       - spring.flyway.password=password
       - spring.flyway.group=true
+      - backoffice.service.host=http://backofficeServiceApp:8080
+      - car.service.host=http://carServiceApp:8080
+
+networks:
+  default:
+    name: carsharing
+    external: true
