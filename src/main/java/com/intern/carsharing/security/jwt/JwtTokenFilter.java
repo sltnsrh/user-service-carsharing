@@ -3,7 +3,8 @@ package com.intern.carsharing.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
 import java.io.IOException;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +55,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         ApiExceptionObject message = new ApiExceptionObject(
                 JWT_INVALID_MESSAGE,
                 HttpStatus.UNAUTHORIZED,
-                ZonedDateTime.now().toString()
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
         servletResponse.getWriter().write(objectMapper.writeValueAsString(message));
         servletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
