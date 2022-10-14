@@ -17,17 +17,19 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
 class BackofficeClientServiceImplTest {
+    private static final String BACKOFFICE_CLIENT_BASE_URL = "http://localhost:8082";
     @InjectMocks
     private BackofficeClientServiceImpl backofficeClientService;
     @Mock
     private PermissionService permissionService;
     @Spy
-    private final WebClient backofficeClient = WebClient.create("http://localhost:8082");
+    private final WebClient backofficeClient = WebClient.create(BACKOFFICE_CLIENT_BASE_URL);
     private final MockWebServer mockWebServer = new MockWebServer();
 
     @BeforeEach
     void start() throws IOException {
-        mockWebServer.start(8082);
+        mockWebServer.start(Integer.parseInt(
+                BACKOFFICE_CLIENT_BASE_URL.substring(BACKOFFICE_CLIENT_BASE_URL.length() - 4)));
     }
 
     @AfterEach
