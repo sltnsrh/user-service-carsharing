@@ -245,9 +245,10 @@ public class UserController {
     public ResponseEntity<Object> addCarToRent(
             @Parameter(description = "User id", example = "1")
             @PathVariable("userId") Long userId,
-            @RequestBody CarRegistrationRequestDto requestDto
+            @RequestBody CarRegistrationRequestDto requestDto,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken
     ) {
-        return carClientService.addCarToRent(userId, requestDto);
+        return carClientService.addCarToRent(userId, requestDto, bearerToken);
     }
 
     @Operation(
@@ -269,8 +270,9 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @Parameter(description = "Car id", example = "1")
             @PathVariable("carId") Long carId,
-            @RequestBody ChangeCarStatusRequestDto requestDto
+            @RequestBody ChangeCarStatusRequestDto requestDto,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken
     ) {
-        return carClientService.changeCarStatus(userId, carId, requestDto);
+        return carClientService.changeCarStatus(userId, carId, requestDto, bearerToken);
     }
 }

@@ -1,5 +1,6 @@
 package com.intern.carsharing.exception;
 
+import io.jsonwebtoken.JwtException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
@@ -44,9 +45,12 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(getApiExceptionObject(errorMessages, status), status);
     }
 
-    @ExceptionHandler(value = {UsernameNotFoundException.class})
+    @ExceptionHandler(value = {
+            UsernameNotFoundException.class,
+            JwtException.class
+    })
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
-            UsernameNotFoundException e
+            RuntimeException e
     ) {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         return new ResponseEntity<>(getApiExceptionObject(e.getMessage(), status), status);

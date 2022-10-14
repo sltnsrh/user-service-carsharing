@@ -116,7 +116,8 @@ class CarClientServiceImplTest {
                 .addHeader("Content-type", "application/json")
                 .setBody(CAR_BODY_SIMPLE));
         CarRegistrationRequestDto requestDto = new CarRegistrationRequestDto();
-        ResponseEntity<Object> actual = carClientService.addCarToRent(1L, requestDto);
+        ResponseEntity<Object> actual = carClientService
+                .addCarToRent(1L, requestDto, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.CREATED, actual.getStatusCode());
         Assertions.assertNotNull(actual.getBody());
     }
@@ -126,7 +127,8 @@ class CarClientServiceImplTest {
         mockWebServer.enqueue(new MockResponse()
                 .setResponseCode(404));
         CarRegistrationRequestDto requestDto = new CarRegistrationRequestDto();
-        ResponseEntity<Object> actual = carClientService.addCarToRent(1L, requestDto);
+        ResponseEntity<Object> actual = carClientService
+                .addCarToRent(1L, requestDto, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
     }
 
@@ -142,7 +144,8 @@ class CarClientServiceImplTest {
                 .setResponseCode(200)
                 .setHeader("Content-type", "application/json")
                 .setBody("{\"carStatus\": \"FREE\"}"));
-        ResponseEntity<Object> actual = carClientService.changeCarStatus(1L, 1L, requestDto);
+        ResponseEntity<Object> actual = carClientService
+                .changeCarStatus(1L, 1L, requestDto, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.OK, actual.getStatusCode());
         Assertions.assertTrue(Objects.requireNonNull(actual.getBody()).toString().contains("FREE"));
     }
@@ -161,7 +164,7 @@ class CarClientServiceImplTest {
         requestDto.setStatus("FREE");
         Assertions.assertThrows(CarIsRentedException.class,
                 () -> carClientService.changeCarStatus(
-                        1L, 1L, requestDto));
+                        1L, 1L, requestDto, JWT_AUTH_TOKEN));
     }
 
     @Test
@@ -174,7 +177,8 @@ class CarClientServiceImplTest {
         requestDto.setStatus("FREE");
         mockWebServer.enqueue(new MockResponse()
                 .setResponseCode(400));
-        ResponseEntity<Object> actual = carClientService.changeCarStatus(1L, 1L, requestDto);
+        ResponseEntity<Object> actual = carClientService
+                .changeCarStatus(1L, 1L, requestDto, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, actual.getStatusCode());
     }
 }

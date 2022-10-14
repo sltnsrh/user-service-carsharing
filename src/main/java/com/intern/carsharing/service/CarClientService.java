@@ -10,9 +10,10 @@ public interface CarClientService {
             String carType, String bearerToken
     );
 
-    ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto);
+    ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto,
+                                        String bearerToken);
 
     ResponseEntity<Object> changeCarStatus(
-            Long userId, Long carId, ChangeCarStatusRequestDto requestDto
+            Long userId, Long carId, ChangeCarStatusRequestDto requestDto, String bearerToken
     );
 }

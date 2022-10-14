@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
             String bearerToken
     ) {
         permissionService.check(userId);
-        CarDto car = getCarById(carId);
+        CarDto car = getCarById(carId, bearerToken);
         checkIfCarBelongsUser(car, userId, carId);
         MultiValueMap<String, String> queryParams =
                 getPresentQueryParams(startDate, endDate, carType);
@@ -54,11 +55,12 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    private CarDto getCarById(Long carId) {
+    private CarDto getCarById(Long carId, String bearerToken) {
         try {
             return carClient
                     .get()
                     .uri("/cars/" + carId)
+                    .header(HttpHeaders.AUTHORIZATION, bearerToken)
                     .retrieve()
                     .bodyToMono(CarDto.class)
                     .block();
@@ -68,23 +70,26 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
     }
 
     @Override
-    public ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto) {
+    public ResponseEntity<Object> addCarToRent(
+            Long userId, CarRegistrationRequestDto requestDto, String bearerToken) {
         permissionService.check(userId);
         requestDto.setCarOwnerId(userId);
         try {
-            return executeRequest(requestDto);
+            return executeRequest(requestDto, bearerToken);
         } catch (WebClientResponseException e) {
             return createResponseEntityException(e);
         }
     }
 
-    private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto) {
+    private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto,
+                                                  String bearerToken) {
         Object response = carClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/cars")
                         .build()
                 )
+                .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestDto))
                 .retrieve()
@@ -95,10 +100,10 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
 
     @Override
     public ResponseEntity<Object> changeCarStatus(
-            Long userId, Long carId, ChangeCarStatusRequestDto requestDto
+            Long userId, Long carId, ChangeCarStatusRequestDto requestDto, String bearerToken
     ) {
         permissionService.check(userId);
-        CarDto car = getCarById(carId);
+        CarDto car = getCarById(carId, bearerToken);
         checkIfCarBelongsUser(car, userId, carId);
         checkIfCarNotRented(car);
         try {
@@ -109,6 +114,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
                             .queryParam("carStatus", requestDto.getStatus())
                             .build()
                     )
+                    .header(HttpHeaders.AUTHORIZATION, bearerToken)
                     .retrieve()
                     .bodyToMono(Object.class)
                     .block();
