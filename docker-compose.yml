@@ -11,6 +11,7 @@ services:
       - '3307:3306'
 
   app:
+    image: user-service-app:1.07
     container_name: userServiceApp
     depends_on:
       - db

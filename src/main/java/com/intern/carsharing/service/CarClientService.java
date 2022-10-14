@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 
 public interface CarClientService {
     ResponseEntity<Object> getCarStatistics(
-            Long userId, Long carId, String startDate, String endDate, String carType
+            Long userId, Long carId, String startDate, String endDate,
+            String carType, String bearerToken
     );
 
     ResponseEntity<Object> addCarToRent(Long userId, CarRegistrationRequestDto requestDto);

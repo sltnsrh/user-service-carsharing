@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,7 +20,9 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
     private final PermissionService permissionService;
 
     @Override
-    public Object getTripStatistics(Long userId, String startDate, String endDate, String carType) {
+    public Object getTripStatistics(
+            Long userId, String startDate, String endDate, String carType, String bearerToken
+    ) {
         permissionService.check(userId);
         return backofficeClient
                 .get()
@@ -28,6 +31,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
                         .queryParams(getPresentQueryParams(startDate, endDate, carType))
                         .build()
                 )
+                .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(Object.class)
                 .block();
@@ -35,7 +39,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
 
     @Override
     public List<OrderDto> getAllCarOrders(
-            MultiValueMap<String, String> queryParams, Long carId) {
+            MultiValueMap<String, String> queryParams, Long carId, String bearerToken) {
         OrderDto[] orderDtoArray = backofficeClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -43,6 +47,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
                         .queryParams(queryParams)
                         .build()
                 )
+                .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(OrderDto[].class)
                 .block();

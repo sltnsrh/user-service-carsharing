@@ -6,9 +6,9 @@ import org.springframework.util.MultiValueMap;
 
 public interface BackofficeClientService {
     Object getTripStatistics(
-            Long userId, String startDate, String endDate, String carType
+            Long userId, String startDate, String endDate, String carType, String bearerToken
     );
 
     List<OrderDto> getAllCarOrders(
-            MultiValueMap<String, String> queryParams, Long carId);
+            MultiValueMap<String, String> queryParams, Long carId, String bearerToken);
 }

@@ -36,6 +36,7 @@ class CarClientServiceImplTest {
     private static final String CAR_LOCKED_BODY_SIMPLE =
             "{\"id\": 1,\"carStatus\": \"LOCKED\",\"carOwnerId\": 1}";
     private static final String CAR_CLIENT_BASE_URL = "http://localhost:8084";
+    private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
     private CarClientServiceImpl carClientService;
     @Mock
@@ -68,10 +69,10 @@ class CarClientServiceImplTest {
         OrderDto order = new OrderDto();
         order.setCarId(1L);
         order.setPrice(BigDecimal.valueOf(100));
-        Mockito.when(backofficeClientService.getAllCarOrders(any(), any()))
+        Mockito.when(backofficeClientService.getAllCarOrders(any(), any(), any()))
                 .thenReturn(List.of(order));
         ResponseEntity<Object> actual = carClientService.getCarStatistics(
-                1L, 1L, null, null, null);
+                1L, 1L, null, null, null, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.OK, actual.getStatusCode());
     }
 
@@ -81,7 +82,7 @@ class CarClientServiceImplTest {
                 .setResponseCode(404));
         Assertions.assertThrows(CarNotFoundException.class,
                 () -> carClientService.getCarStatistics(
-                        1L, 1L, null, null, null));
+                        1L, 1L, null, null, null, JWT_AUTH_TOKEN));
     }
 
     @Test
@@ -93,7 +94,7 @@ class CarClientServiceImplTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200)
                 .setHeader("Content-type", "application/json"));
         ResponseEntity<Object> actual = carClientService.getCarStatistics(
-                1L, 1L, null, null, null);
+                1L, 1L, null, null, null, JWT_AUTH_TOKEN);
         Assertions.assertEquals(HttpStatus.OK, actual.getStatusCode());
     }
 
@@ -105,7 +106,7 @@ class CarClientServiceImplTest {
                 .setBody(CAR_BODY_SIMPLE));
         Assertions.assertThrows(CarNotFoundException.class,
                 () -> carClientService.getCarStatistics(
-                        2L, 1L, null, null, null));
+                        2L, 1L, null, null, null, JWT_AUTH_TOKEN));
     }
 
     @Test

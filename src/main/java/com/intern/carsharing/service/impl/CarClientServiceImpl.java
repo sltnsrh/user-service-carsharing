@@ -34,14 +34,16 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
 
     @Override
     public ResponseEntity<Object> getCarStatistics(
-            Long userId, Long carId, String startDate, String endDate, String carType
+            Long userId, Long carId, String startDate, String endDate, String carType,
+            String bearerToken
     ) {
         permissionService.check(userId);
         CarDto car = getCarById(carId);
         checkIfCarBelongsUser(car, userId, carId);
         MultiValueMap<String, String> queryParams =
                 getPresentQueryParams(startDate, endDate, carType);
-        List<OrderDto> carOrders = backofficeClientService.getAllCarOrders(queryParams, carId);
+        List<OrderDto> carOrders =
+                backofficeClientService.getAllCarOrders(queryParams, carId, bearerToken);
         CarStatisticsResponseDto responseDto = carMapper.toStatisticsDto(car);
         responseDto.setOrders(carOrders);
         responseDto.setTripsNumber(carOrders.size());

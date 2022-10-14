@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -191,10 +193,11 @@ public class UserController {
             @RequestParam(required = false)
             String dateEnd,
             @RequestParam(required = false)
-            String carType
+            String carType,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken
     ) {
         return new ResponseEntity<>(backofficeClientService
-                .getTripStatistics(id, dateStart, dateEnd, carType),
+                .getTripStatistics(id, dateStart, dateEnd, carType, bearerToken),
                 HttpStatus.OK);
     }
 
@@ -216,13 +219,13 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @Parameter(description = "Car id", example = "1")
             @PathVariable("carId") Long carId,
-            @RequestParam(required = false)
-            String dateStart,
-            @RequestParam(required = false)
-            String dateEnd,
-            @RequestParam(required = false)
-            String carType) {
-        return carClientService.getCarStatistics(userId, carId, dateStart, dateEnd, carType);
+            @RequestParam(required = false) String dateStart,
+            @RequestParam(required = false) String dateEnd,
+            @RequestParam(required = false) String carType,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken
+    ) {
+        return carClientService
+                .getCarStatistics(userId, carId, dateStart, dateEnd, carType, bearerToken);
     }
 
     @Operation(

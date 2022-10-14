@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @ExtendWith(MockitoExtension.class)
 class BackofficeClientServiceImplTest {
     private static final String BACKOFFICE_CLIENT_BASE_URL = "http://localhost:8082";
+    private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
     private BackofficeClientServiceImpl backofficeClientService;
     @Mock
@@ -48,7 +49,8 @@ class BackofficeClientServiceImplTest {
                 1L,
                 "2022-01-01",
                 "2022-02-01",
-                "PREMIUM"
+                "PREMIUM",
+                JWT_AUTH_TOKEN
         );
         Assertions.assertNotNull(actual);
         Assertions.assertEquals("{trip=1}", actual.toString());
@@ -62,7 +64,7 @@ class BackofficeClientServiceImplTest {
                 .setBody("{\"trip\":\"1\"}"));
 
         Object actual = backofficeClientService.getTripStatistics(
-                1L, null, null, null);
+                1L, null, null, null, JWT_AUTH_TOKEN);
         Assertions.assertNotNull(actual);
         Assertions.assertEquals("{trip=1}", actual.toString());
     }
