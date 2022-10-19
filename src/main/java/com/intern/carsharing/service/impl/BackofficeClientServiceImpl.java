@@ -2,6 +2,7 @@ package com.intern.carsharing.service.impl;
 
 import com.intern.carsharing.model.dto.response.OrderDto;
 import com.intern.carsharing.service.BackofficeClientService;
+import com.intern.carsharing.service.DiscoveryUrlService;
 import com.intern.carsharing.service.PermissionService;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +17,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 @RequiredArgsConstructor
 public class BackofficeClientServiceImpl extends ClientService implements BackofficeClientService {
-    private final WebClient backofficeClient;
+    private final DiscoveryUrlService urlService;
+    private final WebClient webClient;
     private final PermissionService permissionService;
 
     @Override
@@ -24,10 +26,10 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
             Long userId, String startDate, String endDate, String carType, String bearerToken
     ) {
         permissionService.check(userId);
-        return backofficeClient
+        return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/user/orders/" + userId)
+                        .path(urlService.getBackofficeServiceUrl() + "/user/orders/" + userId)
                         .queryParams(getPresentQueryParams(startDate, endDate, carType))
                         .build()
                 )
@@ -40,10 +42,11 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
     @Override
     public List<OrderDto> getAllCarOrders(
             MultiValueMap<String, String> queryParams, Long carId, String bearerToken) {
-        OrderDto[] orderDtoArray = backofficeClient
+        OrderDto[] orderDtoArray = webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(String.format("user/cars/%s/orders", carId))
+                        .path(String.format(urlService.getBackofficeServiceUrl()
+                                + "/user/cars/%s/orders", carId))
                         .queryParams(queryParams)
                         .build()
                 )

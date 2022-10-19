@@ -8,6 +8,7 @@ import com.intern.carsharing.model.dto.response.CarDto;
 import com.intern.carsharing.model.dto.response.CarStatisticsResponseDto;
 import com.intern.carsharing.model.dto.response.OrderDto;
 import com.intern.carsharing.service.CarClientService;
+import com.intern.carsharing.service.DiscoveryUrlService;
 import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.mapper.CarMapper;
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
     private final CarMapper carMapper;
     private final PermissionService permissionService;
     private final BackofficeClientServiceImpl backofficeClientService;
+    private final DiscoveryUrlService urlService;
 
     @Override
     public ResponseEntity<Object> getCarStatistics(
@@ -59,7 +61,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         try {
             return carClient
                     .get()
-                    .uri("/cars/" + carId)
+                    .uri(urlService.getCarServiceUrl() + "/cars/" + carId)
                     .header(HttpHeaders.AUTHORIZATION, bearerToken)
                     .retrieve()
                     .bodyToMono(CarDto.class)
@@ -86,7 +88,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         Object response = carClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/cars")
+                        .path(urlService.getCarServiceUrl() + "/cars")
                         .build()
                 )
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -110,7 +112,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
             Object response = carClient
                     .patch()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/cars/status/" + carId)
+                            .path(urlService.getCarServiceUrl() + "/cars/status/" + carId)
                             .queryParam("carStatus", requestDto.getStatus())
                             .build()
                     )
