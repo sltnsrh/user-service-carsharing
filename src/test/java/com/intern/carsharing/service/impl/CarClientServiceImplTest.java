@@ -7,6 +7,7 @@ import com.intern.carsharing.exception.CarNotFoundException;
 import com.intern.carsharing.model.dto.request.CarRegistrationRequestDto;
 import com.intern.carsharing.model.dto.request.ChangeCarStatusRequestDto;
 import com.intern.carsharing.model.dto.response.OrderDto;
+import com.intern.carsharing.service.DiscoveryUrlService;
 import com.intern.carsharing.service.PermissionService;
 import com.intern.carsharing.service.mapper.CarMapper;
 import com.intern.carsharing.service.mapper.CarMapperImpl;
@@ -35,7 +36,7 @@ class CarClientServiceImplTest {
     private static final String CAR_BODY_SIMPLE = "{\"id\": 1,\"carOwnerId\": 1}";
     private static final String CAR_LOCKED_BODY_SIMPLE =
             "{\"id\": 1,\"carStatus\": \"LOCKED\",\"carOwnerId\": 1}";
-    private static final String CAR_CLIENT_BASE_URL = "http://localhost:8084";
+    private static final String CAR_CLIENT_BASE_URL = "localhost:8084";
     private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
     private CarClientServiceImpl carClientService;
@@ -43,16 +44,19 @@ class CarClientServiceImplTest {
     private BackofficeClientServiceImpl backofficeClientService;
     @Mock
     private PermissionService permissionService;
+    @Mock
+    private DiscoveryUrlService urlService;
     @Spy
     private final CarMapper carMapper = new CarMapperImpl();
     @Spy
-    private final WebClient carClient = WebClient.create(CAR_CLIENT_BASE_URL);
+    private final WebClient carClient = WebClient.create();
     private final MockWebServer mockWebServer = new MockWebServer();
 
     @BeforeEach
     void start() throws IOException {
         mockWebServer.start(
                 Integer.parseInt(CAR_CLIENT_BASE_URL.substring(CAR_CLIENT_BASE_URL.length() - 4)));
+        Mockito.when(urlService.getCarServiceUrl()).thenReturn(CAR_CLIENT_BASE_URL);
     }
 
     @AfterEach
