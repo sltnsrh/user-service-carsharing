@@ -43,7 +43,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
         OrderDto[] orderDtoArray = backofficeClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/manager/orders")
+                        .path(String.format("user/cars/%s/orders", carId))
                         .queryParams(queryParams)
                         .build()
                 )
@@ -53,7 +53,6 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
                 .block();
         if (orderDtoArray != null) {
             return Arrays.stream(orderDtoArray)
-                    .filter(order -> order.getCarId().equals(carId))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
