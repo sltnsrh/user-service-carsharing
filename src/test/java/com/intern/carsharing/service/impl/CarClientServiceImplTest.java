@@ -67,7 +67,6 @@ class CarClientServiceImplTest {
                 .addHeader("Content-type", "application/json")
                 .setBody(CAR_BODY_SIMPLE));
         OrderDto order = new OrderDto();
-        order.setCarId(1L);
         order.setPrice(BigDecimal.valueOf(100));
         Mockito.when(backofficeClientService.getAllCarOrders(any(), any(), any()))
                 .thenReturn(List.of(order));

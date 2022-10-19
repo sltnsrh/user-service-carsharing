@@ -12,5 +12,5 @@ public class OrderDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endDateTime;
     private BigDecimal price;
-    private Long carId;
+    private String currency;
 }

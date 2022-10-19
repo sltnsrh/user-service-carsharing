@@ -72,7 +72,6 @@ public class UserControllerWebClientTest extends IntegrationTest {
                 .addHeader("Content-type", "application/json")
                 .setBody(objectMapper.writeValueAsString(carDto)));
         OrderDto orderDto = new OrderDto();
-        orderDto.setCarId(1L);
         orderDto.setPrice(BigDecimal.valueOf(100));
         mockBackofficeWebServer.start(8082);
         mockBackofficeWebServer.enqueue(new MockResponse()
