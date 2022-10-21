@@ -15,7 +15,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "black_list")
+@Table(name = "black_lists")
 public class BlackList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
