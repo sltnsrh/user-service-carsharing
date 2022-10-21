@@ -143,4 +143,10 @@ public class AuthenticationController {
     ) {
         return new ResponseEntity<>(authService.validateAuthToken(bearerToken), HttpStatus.OK);
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<Object> logout(
+            @RequestHeader("Authorization") String bearerToken) {
+        return new ResponseEntity<>(authService.logout(bearerToken), HttpStatus.OK);
+    }
 }

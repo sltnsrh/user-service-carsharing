@@ -6,6 +6,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -91,5 +93,14 @@ public class JwtTokenProvider {
         return roles.stream()
                 .map(role -> role.getRoleName().toString())
                 .collect(Collectors.toList());
+    }
+
+    public LocalDateTime getExpirationDate(String token) {
+        return LocalDateTime.ofInstant(Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJwt(token)
+                .getBody()
+                .getExpiration()
+                .toInstant(), ZoneId.systemDefault());
     }
 }

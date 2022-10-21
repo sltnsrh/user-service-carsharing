@@ -20,4 +20,6 @@ public interface AuthService {
     LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto);
 
     ValidateTokenResponseDto validateAuthToken(String bearerToken);
+
+    Object logout(String jwtToken);
 }

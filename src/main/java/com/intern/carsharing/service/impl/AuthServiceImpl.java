@@ -1,9 +1,11 @@
 package com.intern.carsharing.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
+import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
@@ -20,6 +22,7 @@ import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthResponseBuilder;
 import com.intern.carsharing.service.AuthService;
 import com.intern.carsharing.service.BalanceService;
+import com.intern.carsharing.service.BlackListService;
 import com.intern.carsharing.service.ConfirmationTokenService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
@@ -51,6 +54,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final BalanceService balanceService;
     private final AuthResponseBuilder responseBuilder;
+    private final BlackListService blackListService;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -206,5 +211,21 @@ public class AuthServiceImpl implements AuthService {
         if (!user.getStatus().getStatusType().equals(StatusType.ACTIVE)) {
             throw new AuthTokenException("Actual user isn't active: " + userName);
         }
+    }
+
+    @Override
+    public Object logout(String bearerToken) {
+        String token = jwtTokenProvider.resolveToken(bearerToken);
+        if (jwtTokenProvider.validateToken(token)) {
+            User user = userService.findByEmail(jwtTokenProvider.getUserName(token));
+            var blackList = new BlackList();
+            blackList.setUser(user);
+            blackList.setJwtToken(token);
+            blackList.setExpirationDate(jwtTokenProvider.getExpirationDate(token));
+            blackListService.add(blackList);
+            refreshTokenService.checkAndDeleteOldRefreshTokens(user);
+            return objectMapper.createObjectNode().put("message", "Logout successful!");
+        }
+        return "logout fail";
     }
 }
