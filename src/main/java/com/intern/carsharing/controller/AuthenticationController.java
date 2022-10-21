@@ -144,6 +144,16 @@ public class AuthenticationController {
         return new ResponseEntity<>(authService.validateAuthToken(bearerToken), HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "User logout",
+            description = "Allows to logout user from the system",
+            tags = {"Authentication"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Ok"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden")
+            }
+    )
     @GetMapping ("/user-logout")
     public ResponseEntity<Object> logout(
             @RequestHeader("Authorization") String bearerToken) {
