@@ -16,6 +16,7 @@ import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthResponseBuilder;
+import com.intern.carsharing.service.BlackListService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import java.time.LocalDateTime;
@@ -46,6 +47,8 @@ class AuthServiceImplTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private RefreshTokenService refreshTokenService;
+    @Mock
+    private BlackListService blackListService;
     @Spy
     private AuthResponseBuilder authResponseBuilder;
 

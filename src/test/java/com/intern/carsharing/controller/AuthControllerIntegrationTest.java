@@ -203,7 +203,7 @@ class AuthControllerIntegrationTest extends IntegrationTest {
         mockMvc.perform(post("/refresh-token")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
