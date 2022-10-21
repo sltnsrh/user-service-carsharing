@@ -4,7 +4,6 @@ import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.repository.BlackListRepository;
 import com.intern.carsharing.service.BlackListService;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
