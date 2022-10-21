@@ -47,7 +47,8 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
-            JwtException.class
+            JwtException.class,
+            RefreshTokenException.class
     })
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
             RuntimeException e
@@ -74,7 +75,6 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {
             LimitedPermissionException.class,
-            RefreshTokenException.class,
             AuthTokenException.class
     })
     public ResponseEntity<ApiExceptionObject> handleLimitedPermissionException(

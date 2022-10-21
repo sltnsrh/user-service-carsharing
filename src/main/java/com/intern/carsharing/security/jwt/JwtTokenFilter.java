@@ -38,8 +38,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider
                 .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
-            if (userIsLoggedOut(token)
-                    || userFailedAuthentication(token)) {
+            if (userIsLoggedOut(token) || userFailedAuthentication(token)) {
                 setUnauthorizedResponseException(servletResponse);
                 return;
             }
