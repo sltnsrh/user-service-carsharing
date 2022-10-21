@@ -47,8 +47,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
-            JwtException.class,
-            LoginException.class
+            JwtException.class
     })
     public ResponseEntity<ApiExceptionObject> handleUsernameNotFoundException(
             RuntimeException e

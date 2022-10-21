@@ -2,6 +2,7 @@ package com.intern.carsharing.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
+import com.intern.carsharing.service.BlackListService;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,43 +22,63 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String JSON_TYPE = "application/json";
-    private static final String JWT_INVALID_MESSAGE = "Jwt token not valid or expired";
+    private static final String USER_UNAUTHORIZED_MESSAGE =
+            "The user is unauthorized. Please go to the authorization page and log in.";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
+    private final BlackListService blackListService;
 
     @Override
     public void doFilterInternal(
             @NotNull HttpServletRequest servletRequest,
             @NotNull HttpServletResponse servletResponse,
             @NotNull FilterChain filterChain
-    ) throws IOException, ServletException {
+    ) throws IOException {
         String token = jwtTokenProvider
                 .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
-            if (jwtTokenProvider.validateToken(token)) {
-                Authentication authentication = jwtTokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                setResponseException(servletResponse);
+            if (userIsLoggedOut(token)
+                    || userFailedAuthentication(token)) {
+                setUnauthorizedResponseException(servletResponse);
                 return;
             }
         }
-        try {
-            filterChain.doFilter(servletRequest, servletResponse);
-        } catch (IllegalArgumentException e) {
-            setResponseException(servletResponse);
-        }
+        doFilter(filterChain, servletRequest, servletResponse);
     }
 
-    private void setResponseException(HttpServletResponse servletResponse) throws IOException {
+    private boolean userIsLoggedOut(String token) {
+        return !blackListService.getAllByToken(token).isEmpty();
+    }
+
+    private boolean userFailedAuthentication(String token) {
+        if (jwtTokenProvider.validateToken(token)) {
+            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return false;
+        }
+        return true;
+    }
+
+    private void setUnauthorizedResponseException(HttpServletResponse servletResponse)
+            throws IOException {
         servletResponse.setContentType(JSON_TYPE);
         ApiExceptionObject message = new ApiExceptionObject(
-                JWT_INVALID_MESSAGE,
+                USER_UNAUTHORIZED_MESSAGE,
                 HttpStatus.UNAUTHORIZED,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
         servletResponse.getWriter().write(objectMapper.writeValueAsString(message));
         servletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    private void doFilter(
+            FilterChain filterChain, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        try {
+            filterChain.doFilter(request, response);
+        } catch (IllegalArgumentException | ServletException e) {
+            setUnauthorizedResponseException(response);
+        }
     }
 }

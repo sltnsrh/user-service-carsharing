@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.ConfirmationTokenInvalidException;
 import com.intern.carsharing.exception.DriverLicenceAlreadyExistException;
-import com.intern.carsharing.exception.LoginException;
 import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.ConfirmationToken;
@@ -192,7 +191,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ValidateTokenResponseDto validateAuthToken(String bearerToken) {
         String token = jwtTokenProvider.resolveToken(bearerToken);
-        checkIfUserLoggedIn(token);
         if (jwtTokenProvider.validateToken(token)) {
             String userName = jwtTokenProvider.getUserName(token);
             User user = userService.findByEmail(userName);
@@ -204,13 +202,6 @@ public class AuthServiceImpl implements AuthService {
             return responseDto;
         }
         throw new AuthTokenException("Jwt auth token not valid: " + bearerToken);
-    }
-
-    private void checkIfUserLoggedIn(String token) {
-        if (!blackListService.getAllByToken(token).isEmpty()) {
-            throw new LoginException("The user is unauthorized. "
-                    + "Please go to the authorization page and log in.");
-        }
     }
 
     private void checkIfUserExistsAndIsActive(User user, String userName) {

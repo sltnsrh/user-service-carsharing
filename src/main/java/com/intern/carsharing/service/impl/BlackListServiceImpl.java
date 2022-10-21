@@ -18,11 +18,6 @@ public class BlackListServiceImpl implements BlackListService {
     }
 
     @Override
-    public List<BlackList> findAllByUserId(long userId) {
-        return blackListRepository.findAllByUserId(userId).orElse(List.of());
-    }
-
-    @Override
     public void delete(BlackList blackList) {
         blackListRepository.delete(blackList);
     }
