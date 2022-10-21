@@ -6,6 +6,7 @@ import com.intern.carsharing.model.dto.request.RegistrationUserRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.service.AuthService;
+import com.intern.carsharing.service.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthService authService;
+    private final RegistrationService registrationService;
 
     @Operation(
             summary = "Registration a new user",
@@ -45,7 +47,8 @@ public class AuthenticationController {
     public ResponseEntity<Object> register(
             @Valid @RequestBody RegistrationUserRequestDto requestUserDto
     ) {
-        return new ResponseEntity<>(authService.register(requestUserDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(registrationService.register(requestUserDto),
+                HttpStatus.CREATED);
     }
 
     @Operation(
@@ -81,7 +84,7 @@ public class AuthenticationController {
     )
     @GetMapping("/confirm-email")
     public ResponseEntity<Object> confirmEmail(@RequestParam String token) {
-        return new ResponseEntity<>(authService.confirmEmail(token), HttpStatus.OK);
+        return new ResponseEntity<>(registrationService.confirmEmail(token), HttpStatus.OK);
     }
 
     @Operation(
@@ -97,7 +100,7 @@ public class AuthenticationController {
     )
     @GetMapping("/resend-confirmation-email")
     public ResponseEntity<Object> resendEmail(@RequestParam String email) {
-        return new ResponseEntity<>(authService.resendEmail(email), HttpStatus.OK);
+        return new ResponseEntity<>(registrationService.resendEmail(email), HttpStatus.OK);
     }
 
     @Operation(
