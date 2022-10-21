@@ -216,16 +216,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Object logout(String bearerToken) {
         String token = jwtTokenProvider.resolveToken(bearerToken);
-        if (jwtTokenProvider.validateToken(token)) {
-            User user = userService.findByEmail(jwtTokenProvider.getUserName(token));
-            var blackList = new BlackList();
-            blackList.setUser(user);
-            blackList.setJwtToken(token);
-            blackList.setExpirationDate(jwtTokenProvider.getExpirationDate(token));
+        jwtTokenProvider.validateToken(token);
+        User user = userService.findByEmail(jwtTokenProvider.getUserName(token));
+        var blackList = new BlackList();
+        blackList.setUser(user);
+        blackList.setJwtToken(token);
+        blackList.setExpirationDate(jwtTokenProvider.getExpirationDate(token));
+        if (blackListService.getAllByToken(token).isEmpty()) {
             blackListService.add(blackList);
-            refreshTokenService.checkAndDeleteOldRefreshTokens(user);
-            return objectMapper.createObjectNode().put("message", "Logout successful!");
         }
-        return "logout fail";
+        refreshTokenService.checkAndDeleteOldRefreshTokens(user);
+        return objectMapper.createObjectNode().put("message", "Logout successful!");
     }
 }

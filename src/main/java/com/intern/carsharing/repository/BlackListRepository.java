@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BlackListRepository extends JpaRepository<BlackList, Long> {
     Optional<List<BlackList>> findAllByUserId(long userId);
+
+    Optional<List<BlackList>> findAllBlackListByJwtToken(String token);
 }

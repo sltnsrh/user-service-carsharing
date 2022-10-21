@@ -4,6 +4,7 @@ import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.repository.BlackListRepository;
 import com.intern.carsharing.service.BlackListService;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +26,10 @@ public class BlackListServiceImpl implements BlackListService {
     @Override
     public void delete(BlackList blackList) {
         blackListRepository.delete(blackList);
+    }
+
+    @Override
+    public List<BlackList> getAllByToken(String token) {
+        return blackListRepository.findAllBlackListByJwtToken(token).orElse(List.of());
     }
 }

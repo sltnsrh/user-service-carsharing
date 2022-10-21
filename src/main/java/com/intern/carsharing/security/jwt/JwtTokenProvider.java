@@ -96,11 +96,11 @@ public class JwtTokenProvider {
     }
 
     public LocalDateTime getExpirationDate(String token) {
-        return LocalDateTime.ofInstant(Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJwt(token)
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token)
                 .getBody()
                 .getExpiration()
-                .toInstant(), ZoneId.systemDefault());
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 }
