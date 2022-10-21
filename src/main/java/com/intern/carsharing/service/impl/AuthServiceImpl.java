@@ -8,7 +8,6 @@ import com.intern.carsharing.exception.UserAlreadyExistException;
 import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.ConfirmationToken;
 import com.intern.carsharing.model.RefreshToken;
-import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
 import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
@@ -30,7 +29,6 @@ import com.intern.carsharing.service.mapper.UserMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -101,6 +99,7 @@ public class AuthServiceImpl implements AuthService {
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         refreshTokenService.checkAndDeleteOldRefreshTokens(user);
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
+        blackListService.deleteAllExpiredByUser(user);
         return responseBuilder
                 .getLoginSuccessResponse(user.getId(), email, jwtToken, refreshToken.getToken());
     }
@@ -176,12 +175,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public LoginResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
-        RefreshToken refreshToken = refreshTokenService.resolveRefreshToken(requestDto.getToken());
-        String email = refreshToken.getUser().getEmail();
-        Set<Role> roles = refreshToken.getUser().getRoles();
-        String jwtToken = jwtTokenProvider.createToken(email, roles);
+        var refreshToken = refreshTokenService.resolveRefreshToken(requestDto.getToken());
+        var user = refreshToken.getUser();
+        var email = user.getEmail();
+        var jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
+        blackListService.deleteAllExpiredByUser(user);
         return LoginResponseDto.builder()
-                .userId(refreshToken.getUser().getId())
+                .userId(user.getId())
                 .email(email)
                 .token(jwtToken)
                 .refreshToken(refreshToken.getToken())
