@@ -2,6 +2,7 @@ package com.intern.carsharing.security.jwt;
 
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.util.RoleName;
+import java.time.LocalDateTime;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,5 +41,15 @@ class JwtTokenProviderTest {
     void resolveTokenWithNotBearerStart() {
         String actual = jwtTokenProvider.resolveToken("token");
         Assertions.assertNull(actual);
+    }
+
+    @Test
+    void getExpirationDateWithRealToken() {
+        Set<Role> roles = Set.of(new Role(1L, RoleName.ADMIN));
+        jwtTokenProvider.setSecret("secretkey");
+        jwtTokenProvider.setExpirationPeriod(360000L);
+        String token = jwtTokenProvider.createToken("bob@gmail.com", roles);
+        LocalDateTime actual = jwtTokenProvider.getExpirationDate(token);
+        Assertions.assertNotNull(actual);
     }
 }
