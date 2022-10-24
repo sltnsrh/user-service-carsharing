@@ -29,7 +29,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlService.getBackofficeServiceUrl() + "/user/orders/" + userId)
+                        .path(urlService.getBackofficeServiceUrl() + "user/orders/" + userId)
                         .queryParams(getPresentQueryParams(startDate, endDate, carType))
                         .build()
                 )
@@ -46,7 +46,7 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format(urlService.getBackofficeServiceUrl()
-                                + "/user/cars/%s/orders", carId))
+                                + "user/cars/%s/orders", carId))
                         .queryParams(queryParams)
                         .build()
                 )

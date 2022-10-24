@@ -61,7 +61,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         try {
             return carClient
                     .get()
-                    .uri(urlService.getCarServiceUrl() + "/cars/" + carId)
+                    .uri(urlService.getCarServiceUrl() + "cars/" + carId)
                     .header(HttpHeaders.AUTHORIZATION, bearerToken)
                     .retrieve()
                     .bodyToMono(CarDto.class)
@@ -88,7 +88,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         Object response = carClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlService.getCarServiceUrl() + "/cars")
+                        .path(urlService.getCarServiceUrl() + "cars")
                         .build()
                 )
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -112,7 +112,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
             Object response = carClient
                     .patch()
                     .uri(uriBuilder -> uriBuilder
-                            .path(urlService.getCarServiceUrl() + "/cars/status/" + carId)
+                            .path(urlService.getCarServiceUrl() + "cars/status/" + carId)
                             .queryParam("carStatus", requestDto.getStatus())
                             .build()
                     )
