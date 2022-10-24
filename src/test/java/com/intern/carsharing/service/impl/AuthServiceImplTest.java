@@ -2,8 +2,10 @@ package com.intern.carsharing.service.impl;
 
 import static org.mockito.ArgumentMatchers.any;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.RefreshTokenException;
+import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
@@ -37,6 +39,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
+    private static final String BOB_USERNAME = "bob@gmail.com";
+    private static final String USER_PASSWORD = "password";
+    private static final String TOKEN = "token";
+    private static final String REFRESH_TOKEN = "refreshtoken";
+    private static final String BEARER_TOKEN = "Bearer token";
+    private static final String SUCCESS_LOGOUT = "Logout successful";
+
     @InjectMocks
     private AuthServiceImpl authService;
     @Mock
@@ -51,46 +60,48 @@ class AuthServiceImplTest {
     private BlackListService blackListService;
     @Spy
     private AuthResponseBuilder authResponseBuilder;
+    @Spy
+    private ObjectMapper objectMapper;
 
     @Test
     void loginWithValidData() {
         User user = new User();
         user.setId(1L);
-        user.setEmail("bob@gmail.com");
+        user.setEmail(BOB_USERNAME);
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
         user.setStatus(new Status(1L, StatusType.ACTIVE));
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
-        Mockito.when(jwtTokenProvider.createToken("bob@gmail.com", user.getRoles()))
-                .thenReturn("token");
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
+        Mockito.when(jwtTokenProvider.createToken(BOB_USERNAME, user.getRoles()))
+                .thenReturn(TOKEN);
         Mockito.when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                "bob@gmail.com", "password"))).thenReturn(null);
+                BOB_USERNAME, USER_PASSWORD))).thenReturn(null);
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken("refreshtoken");
+        refreshToken.setToken(REFRESH_TOKEN);
         Mockito.doNothing().when(refreshTokenService)
                 .checkAndDeleteOldRefreshTokens(any(User.class));
         Mockito.when(refreshTokenService.create(user.getId())).thenReturn(refreshToken);
         LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("password");
+        loginRequestDto.setEmail(BOB_USERNAME);
+        loginRequestDto.setPassword(USER_PASSWORD);
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
-        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
-        Assertions.assertEquals("token", loginResponseDto.getToken());
-        Assertions.assertEquals("refreshtoken", loginResponseDto.getRefreshToken());
+        Assertions.assertEquals(BOB_USERNAME, loginResponseDto.getEmail());
+        Assertions.assertEquals(TOKEN, loginResponseDto.getToken());
+        Assertions.assertEquals(REFRESH_TOKEN, loginResponseDto.getRefreshToken());
     }
 
     @Test
     void loginWithUserWithStatusInvalidate() {
         User user = new User();
         user.setId(1L);
-        user.setEmail("bob@gmail.com");
+        user.setEmail(BOB_USERNAME);
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
         user.setStatus(new Status(1L, StatusType.INVALIDATE));
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("password");
+        loginRequestDto.setEmail(BOB_USERNAME);
+        loginRequestDto.setPassword(USER_PASSWORD);
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
-        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertEquals(BOB_USERNAME, loginResponseDto.getEmail());
         Assertions
                 .assertTrue(loginResponseDto.getMessage().contains("Your email wasn't confirmed"));
     }
@@ -99,45 +110,45 @@ class AuthServiceImplTest {
     void loginWithUserWithStatusBlocked() {
         User user = new User();
         user.setId(1L);
-        user.setEmail("bob@gmail.com");
+        user.setEmail(BOB_USERNAME);
         user.setRoles(Set.of(new Role(1L, RoleName.ADMIN)));
         user.setStatus(new Status(1L, StatusType.BLOCKED));
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         LoginRequestDto loginRequestDto = new LoginRequestDto();
-        loginRequestDto.setEmail("bob@gmail.com");
-        loginRequestDto.setPassword("password");
+        loginRequestDto.setEmail(BOB_USERNAME);
+        loginRequestDto.setPassword(USER_PASSWORD);
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
-        Assertions.assertEquals("bob@gmail.com", loginResponseDto.getEmail());
+        Assertions.assertEquals(BOB_USERNAME, loginResponseDto.getEmail());
         Assertions.assertTrue(loginResponseDto.getMessage().contains("Your account was blocked"));
     }
 
     @Test
     void refreshAuthTokenWithValidRefreshToken() {
         RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
-        requestDto.setToken("refreshtoken");
+        requestDto.setToken(REFRESH_TOKEN);
         User user = new User();
         user.setId(1L);
-        user.setEmail("bob@gmail.com");
+        user.setEmail(BOB_USERNAME);
         user.setRoles(Set.of(new Role(1L, RoleName.USER)));
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
-        refreshToken.setToken("refreshtoken");
-        Mockito.when(refreshTokenService.resolveRefreshToken("refreshtoken"))
+        refreshToken.setToken(REFRESH_TOKEN);
+        Mockito.when(refreshTokenService.resolveRefreshToken(REFRESH_TOKEN))
                 .thenReturn(refreshToken);
         Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getRoles()))
                 .thenReturn("newauthtoken");
         LoginResponseDto actual = authService.refreshToken(requestDto);
         Assertions.assertEquals(user.getEmail(), actual.getEmail());
         Assertions.assertEquals("newauthtoken", actual.getToken());
-        Assertions.assertEquals("refreshtoken", actual.getRefreshToken());
+        Assertions.assertEquals(REFRESH_TOKEN, actual.getRefreshToken());
     }
 
     @Test
     void refreshAuthTokenWithExpiredRefreshToken() {
         RefreshTokenRequestDto requestDto = new RefreshTokenRequestDto();
-        requestDto.setToken("refreshtoken");
-        Mockito.when(refreshTokenService.resolveRefreshToken("refreshtoken"))
+        requestDto.setToken(REFRESH_TOKEN);
+        Mockito.when(refreshTokenService.resolveRefreshToken(REFRESH_TOKEN))
                 .thenThrow(RefreshTokenException.class);
         Assertions.assertThrows(RefreshTokenException.class,
                 () -> authService.refreshToken(requestDto));
@@ -145,58 +156,77 @@ class AuthServiceImplTest {
 
     @Test
     void validateAuthTokenWithValidAndActiveUser() {
-        String token = "Bearer token";
-        String tokenAfterResolve = "token";
-        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
-        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
-        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
+        Mockito.when(jwtTokenProvider.resolveToken(BEARER_TOKEN)).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(TOKEN)).thenReturn(BOB_USERNAME);
         User user = new User();
         user.setId(1L);
         user.setRoles(Set.of(new Role(1L, RoleName.USER)));
         user.setStatus(new Status(1L, StatusType.ACTIVE));
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         Mockito.when(jwtTokenProvider.getRoleNames(
                 new ArrayList<>(user.getRoles()))).thenReturn(List.of("USER"));
-        ValidateTokenResponseDto actual = authService.validateAuthToken(token);
+        ValidateTokenResponseDto actual = authService.validateAuthToken(BEARER_TOKEN);
         Assertions.assertEquals(1L, actual.getUserId());
         Assertions.assertEquals(List.of("USER"), actual.getRoles());
     }
 
     @Test
     void validateAuthTokenWithUserStatusBlocked() {
-        String token = "Bearer token";
-        String tokenAfterResolve = "token";
-        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
-        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
-        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
+        Mockito.when(jwtTokenProvider.resolveToken(BEARER_TOKEN)).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(TOKEN)).thenReturn(BOB_USERNAME);
         User user = new User();
         user.setId(1L);
         user.setRoles(Set.of(new Role(1L, RoleName.USER)));
         user.setStatus(new Status(1L, StatusType.BLOCKED));
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(user);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         Assertions.assertThrows(AuthTokenException.class,
-                () -> authService.validateAuthToken(token));
+                () -> authService.validateAuthToken(BEARER_TOKEN));
     }
 
     @Test
     void validateAuthTokenWithNotValidToken() {
-        String token = "Bearer token";
-        String tokenAfterResolve = "token";
-        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
-        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(false);
+        Mockito.when(jwtTokenProvider.resolveToken(BEARER_TOKEN)).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(false);
         Assertions.assertThrows(AuthTokenException.class,
-                () -> authService.validateAuthToken(token));
+                () -> authService.validateAuthToken(BEARER_TOKEN));
     }
 
     @Test
     void validateAuthTokenWithNotExistUser() {
-        String token = "Bearer token";
-        String tokenAfterResolve = "token";
-        Mockito.when(jwtTokenProvider.resolveToken(token)).thenReturn(tokenAfterResolve);
-        Mockito.when(jwtTokenProvider.validateToken(tokenAfterResolve)).thenReturn(true);
-        Mockito.when(jwtTokenProvider.getUserName(tokenAfterResolve)).thenReturn("bob@gmail.com");
-        Mockito.when(userService.findByEmail("bob@gmail.com")).thenReturn(null);
+        Mockito.when(jwtTokenProvider.resolveToken(BEARER_TOKEN)).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
+        Mockito.when(jwtTokenProvider.getUserName(TOKEN)).thenReturn(BOB_USERNAME);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(null);
         Assertions.assertThrows(UsernameNotFoundException.class,
-                () -> authService.validateAuthToken(token));
+                () -> authService.validateAuthToken(BEARER_TOKEN));
+    }
+
+    @Test
+    void logoutTestWithNewTokenInBlacklist() {
+        Mockito.when(jwtTokenProvider.resolveToken(any(String.class))).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(new User());
+        Mockito.when(jwtTokenProvider.getUserName(any(String.class))).thenReturn(BOB_USERNAME);
+        Mockito.when(jwtTokenProvider.getExpirationDate(TOKEN)).thenReturn(LocalDateTime.now());
+        Mockito.when(blackListService.getAllByToken(TOKEN)).thenReturn(List.of());
+        Mockito.when(blackListService.add(any(BlackList.class))).thenReturn(null);
+        var actual = authService.logout(TOKEN);
+        Assertions.assertNotNull(actual);
+        Assertions.assertTrue(actual.toString().contains(SUCCESS_LOGOUT));
+    }
+
+    @Test
+    void logoutTestWithExistingTokenInBlacklist() {
+        Mockito.when(jwtTokenProvider.resolveToken(any(String.class))).thenReturn(TOKEN);
+        Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(new User());
+        Mockito.when(jwtTokenProvider.getUserName(any(String.class))).thenReturn(BOB_USERNAME);
+        Mockito.when(jwtTokenProvider.getExpirationDate(TOKEN)).thenReturn(LocalDateTime.now());
+        Mockito.when(blackListService.getAllByToken(TOKEN)).thenReturn(List.of(new BlackList()));
+        var actual = authService.logout(TOKEN);
+        Assertions.assertNotNull(actual);
+        Assertions.assertTrue(actual.toString().contains(SUCCESS_LOGOUT));
     }
 }
