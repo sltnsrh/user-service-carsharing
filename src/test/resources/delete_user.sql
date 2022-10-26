@@ -10,4 +10,7 @@ DELETE b FROM `balances` b
 DELETE ur FROM `users_roles` ur
         JOIN `users` u ON ur.user_id = u.id
         WHERE u.email = 'user@gmail.com';
+DELETE bl FROM `black_lists` bl
+        JOIN `users` u ON bl.user_id = u.id
+        WHERE u.email = 'user@gmail.com';
 DELETE FROM `users` WHERE email = 'user@gmail.com';

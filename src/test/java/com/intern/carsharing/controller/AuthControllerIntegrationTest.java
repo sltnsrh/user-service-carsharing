@@ -224,4 +224,45 @@ class AuthControllerIntegrationTest extends IntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken()))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void logoutSuccess() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        String loginResponseJson = mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        LoginResponseDto responseDto =
+                objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
+        mockMvc.perform(get("/user-logout")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @Sql(value = "/add_user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/delete_user.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void logoutWithUnauthorizedUser() throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto(USER_EMAIL, "password");
+        String loginResponseJson = mockMvc.perform(post("/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequestDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        LoginResponseDto responseDto =
+                objectMapper.readValue(loginResponseJson, LoginResponseDto.class);
+        mockMvc.perform(get("/user-logout")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken()))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/user-logout")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getToken()))
+                .andExpect(status().isUnauthorized());
+    }
 }
