@@ -36,7 +36,7 @@ class CarClientServiceImplTest {
     private static final String CAR_BODY_SIMPLE = "{\"id\": 1,\"carOwnerId\": 1}";
     private static final String CAR_LOCKED_BODY_SIMPLE =
             "{\"id\": 1,\"carStatus\": \"LOCKED\",\"carOwnerId\": 1}";
-    private static final String CAR_CLIENT_BASE_URL = "localhost:8084";
+    private static final String CAR_CLIENT_BASE_URL = "http://localhost:8084";
     private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
     private CarClientServiceImpl carClientService;

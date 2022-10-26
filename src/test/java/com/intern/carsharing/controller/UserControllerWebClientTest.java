@@ -32,8 +32,8 @@ import org.springframework.test.context.jdbc.Sql;
 @ExtendWith(MockitoExtension.class)
 public class UserControllerWebClientTest extends IntegrationTest {
     private static final String CAR_OWNER_EMAIL = "owner@gmail.com";
-    private static final String BACKOFFICE_CLIENT_BASE_URL = "localhost:8082";
-    private static final String CAR_CLIENT_BASE_URL = "localhost:8084";
+    private static final String BACKOFFICE_CLIENT_BASE_URL = "http://localhost:8082";
+    private static final String CAR_CLIENT_BASE_URL = "http://localhost:8084";
     private final MockWebServer mockCarWebServer = new MockWebServer();
     private final MockWebServer mockBackofficeWebServer = new MockWebServer();
     @Autowired

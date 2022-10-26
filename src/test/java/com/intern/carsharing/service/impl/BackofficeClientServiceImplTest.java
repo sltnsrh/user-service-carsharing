@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
 class BackofficeClientServiceImplTest {
-    private static final String BACKOFFICE_CLIENT_BASE_URL = "localhost:8082";
+    private static final String BACKOFFICE_CLIENT_BASE_URL = "http://localhost:8082";
     private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
     private BackofficeClientServiceImpl backofficeClientService;
