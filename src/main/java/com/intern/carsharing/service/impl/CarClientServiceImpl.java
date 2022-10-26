@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,10 +27,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class CarClientServiceImpl extends ClientService implements CarClientService {
     private static final String RENTED_STATUS = "RENTED";
-    private final WebClient carClient;
     private final CarMapper carMapper;
     private final PermissionService permissionService;
     private final BackofficeClientServiceImpl backofficeClientService;
@@ -59,9 +60,11 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
 
     private CarDto getCarById(Long carId, String bearerToken) {
         try {
-            return carClient
+            log.info("Sending request to: "
+                    + urlService.getCarServiceUrl() + "cars/" + carId);
+            return WebClient.builder().baseUrl(urlService.getCarServiceUrl()).build()
                     .get()
-                    .uri(urlService.getCarServiceUrl() + "cars/" + carId)
+                    .uri("cars/" + carId)
                     .header(HttpHeaders.AUTHORIZATION, bearerToken)
                     .retrieve()
                     .bodyToMono(CarDto.class)
@@ -85,10 +88,12 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
 
     private ResponseEntity<Object> executeRequest(CarRegistrationRequestDto requestDto,
                                                   String bearerToken) {
-        Object response = carClient
+        log.info("Sending request to: "
+                + urlService.getCarServiceUrl() + "cars");
+        Object response = WebClient.builder().baseUrl(urlService.getCarServiceUrl()).build()
                 .post()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlService.getCarServiceUrl() + "cars")
+                        .path("cars")
                         .build()
                 )
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -109,10 +114,12 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         checkIfCarBelongsUser(car, userId, carId);
         checkIfCarNotRented(car);
         try {
-            Object response = carClient
+            log.info("Sending request to: "
+                    + urlService.getCarServiceUrl() + "cars/status/" + carId);
+            Object response = WebClient.builder().baseUrl(urlService.getCarServiceUrl()).build()
                     .patch()
                     .uri(uriBuilder -> uriBuilder
-                            .path(urlService.getCarServiceUrl() + "cars/status/" + carId)
+                            .path("cars/status/" + carId)
                             .queryParam("carStatus", requestDto.getStatus())
                             .build()
                     )

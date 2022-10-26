@@ -9,16 +9,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class BackofficeClientServiceImpl extends ClientService implements BackofficeClientService {
     private final DiscoveryUrlService urlService;
-    private final WebClient webClient;
     private final PermissionService permissionService;
 
     @Override
@@ -26,13 +27,15 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
             Long userId, String startDate, String endDate, String carType, String bearerToken
     ) {
         permissionService.check(userId);
-        return webClient
+        log.info("Sending request to: "
+                + urlService.getBackofficeServiceUrl()
+                + "user/orders/" + userId);
+        return WebClient.builder().baseUrl(urlService.getBackofficeServiceUrl()).build()
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlService.getBackofficeServiceUrl() + "user/orders/" + userId)
+                        .path("user/orders/" + userId)
                         .queryParams(getPresentQueryParams(startDate, endDate, carType))
-                        .build()
-                )
+                        .build())
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(Object.class)
@@ -42,11 +45,14 @@ public class BackofficeClientServiceImpl extends ClientService implements Backof
     @Override
     public List<OrderDto> getAllCarOrders(
             MultiValueMap<String, String> queryParams, Long carId, String bearerToken) {
-        OrderDto[] orderDtoArray = webClient
+        log.info("Sending request to: "
+                + urlService.getBackofficeServiceUrl()
+                + String.format("user/cars/%s/orders", carId));
+        OrderDto[] orderDtoArray =
+                WebClient.builder().baseUrl(urlService.getBackofficeServiceUrl()).build()
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(String.format(urlService.getBackofficeServiceUrl()
-                                + "user/cars/%s/orders", carId))
+                        .path(String.format("user/cars/%s/orders", carId))
                         .queryParams(queryParams)
                         .build()
                 )

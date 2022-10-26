@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
+@Log4j2
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String JSON_TYPE = "application/json";
@@ -39,6 +41,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
             if (userIsLoggedOut(token) || userFailedAuthentication(token)) {
+                log.info("User is logout or authentication failed. Token: " + token);
                 setUnauthorizedResponseException(servletResponse);
                 return;
             }
