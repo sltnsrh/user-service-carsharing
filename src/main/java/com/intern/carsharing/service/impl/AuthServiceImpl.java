@@ -10,10 +10,10 @@ import com.intern.carsharing.model.dto.request.RefreshTokenRequestDto;
 import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.BlacklistRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthResponseBuilder;
 import com.intern.carsharing.service.AuthService;
-import com.intern.carsharing.service.BlackListService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final AuthResponseBuilder responseBuilder;
-    private final BlackListService blackListService;
+    private final BlacklistRepository blacklistRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -58,7 +58,6 @@ public class AuthServiceImpl implements AuthService {
         String jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
         refreshTokenService.checkAndDeleteOldRefreshTokens(user);
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
-        blackListService.deleteAllExpiredByUser(user);
         return responseBuilder
                 .getLoginSuccessResponse(user.getId(), email, jwtToken, refreshToken.getToken());
     }
@@ -88,7 +87,6 @@ public class AuthServiceImpl implements AuthService {
         var user = refreshToken.getUser();
         var email = user.getEmail();
         var jwtToken = jwtTokenProvider.createToken(email, user.getRoles());
-        blackListService.deleteAllExpiredByUser(user);
         return LoginResponseDto.builder()
                 .userId(user.getId())
                 .email(email)
@@ -128,11 +126,10 @@ public class AuthServiceImpl implements AuthService {
         jwtTokenProvider.validateToken(token);
         User user = userService.findByEmail(jwtTokenProvider.getUserName(token));
         var blackList = new BlackList();
-        blackList.setUser(user);
+        blackList.setUserId(user.getId());
         blackList.setJwtToken(token);
-        blackList.setExpirationDate(jwtTokenProvider.getExpirationDate(token));
-        if (blackListService.getAllByToken(token).isEmpty()) {
-            blackListService.add(blackList);
+        if (!blacklistRepository.isLoggedOut(token)) {
+            blacklistRepository.add(blackList);
         }
         refreshTokenService.checkAndDeleteOldRefreshTokens(user);
         return objectMapper.createObjectNode().put("message", "Logout successful!");

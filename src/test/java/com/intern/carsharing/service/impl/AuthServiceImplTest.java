@@ -16,9 +16,9 @@ import com.intern.carsharing.model.dto.response.LoginResponseDto;
 import com.intern.carsharing.model.dto.response.ValidateTokenResponseDto;
 import com.intern.carsharing.model.util.RoleName;
 import com.intern.carsharing.model.util.StatusType;
+import com.intern.carsharing.repository.BlacklistRepository;
 import com.intern.carsharing.security.jwt.JwtTokenProvider;
 import com.intern.carsharing.service.AuthResponseBuilder;
-import com.intern.carsharing.service.BlackListService;
 import com.intern.carsharing.service.RefreshTokenService;
 import com.intern.carsharing.service.UserService;
 import java.time.LocalDateTime;
@@ -57,7 +57,7 @@ class AuthServiceImplTest {
     @Mock
     private RefreshTokenService refreshTokenService;
     @Mock
-    private BlackListService blackListService;
+    private BlacklistRepository blacklistRepository;
     @Spy
     private AuthResponseBuilder authResponseBuilder;
     @Spy
@@ -207,11 +207,12 @@ class AuthServiceImplTest {
     void logoutTestWithNewTokenInBlacklist() {
         Mockito.when(jwtTokenProvider.resolveToken(any(String.class))).thenReturn(TOKEN);
         Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
-        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(new User());
+        User user = new User();
+        user.setId(1L);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         Mockito.when(jwtTokenProvider.getUserName(any(String.class))).thenReturn(BOB_USERNAME);
-        Mockito.when(jwtTokenProvider.getExpirationDate(TOKEN)).thenReturn(LocalDateTime.now());
-        Mockito.when(blackListService.getAllByToken(TOKEN)).thenReturn(List.of());
-        Mockito.when(blackListService.add(any(BlackList.class))).thenReturn(null);
+        Mockito.when(blacklistRepository.isLoggedOut(TOKEN)).thenReturn(false);
+        Mockito.when(blacklistRepository.add(any(BlackList.class))).thenReturn(null);
         var actual = authService.logout(TOKEN);
         Assertions.assertNotNull(actual);
         Assertions.assertTrue(actual.toString().contains(SUCCESS_LOGOUT));
@@ -221,10 +222,11 @@ class AuthServiceImplTest {
     void logoutTestWithExistingTokenInBlacklist() {
         Mockito.when(jwtTokenProvider.resolveToken(any(String.class))).thenReturn(TOKEN);
         Mockito.when(jwtTokenProvider.validateToken(TOKEN)).thenReturn(true);
-        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(new User());
+        User user = new User();
+        user.setId(1L);
+        Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         Mockito.when(jwtTokenProvider.getUserName(any(String.class))).thenReturn(BOB_USERNAME);
-        Mockito.when(jwtTokenProvider.getExpirationDate(TOKEN)).thenReturn(LocalDateTime.now());
-        Mockito.when(blackListService.getAllByToken(TOKEN)).thenReturn(List.of(new BlackList()));
+        Mockito.when(blacklistRepository.isLoggedOut(TOKEN)).thenReturn(true);
         var actual = authService.logout(TOKEN);
         Assertions.assertNotNull(actual);
         Assertions.assertTrue(actual.toString().contains(SUCCESS_LOGOUT));

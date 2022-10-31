@@ -2,7 +2,7 @@ package com.intern.carsharing.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.ApiExceptionObject;
-import com.intern.carsharing.service.BlackListService;
+import com.intern.carsharing.repository.BlacklistRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +29,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
-    private final BlackListService blackListService;
+    private final BlacklistRepository blacklistRepository;
 
     @Override
     public void doFilterInternal(
@@ -40,17 +40,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider
                 .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
-            if (userIsLoggedOut(token) || userFailedAuthentication(token)) {
+            if (blacklistRepository.isLoggedOut(token) || userFailedAuthentication(token)) {
                 log.info("User is logout or authentication failed. Token: " + token);
                 setUnauthorizedResponseException(servletResponse);
                 return;
             }
         }
         doFilter(filterChain, servletRequest, servletResponse);
-    }
-
-    private boolean userIsLoggedOut(String token) {
-        return !blackListService.getAllByToken(token).isEmpty();
     }
 
     private boolean userFailedAuthentication(String token) {
