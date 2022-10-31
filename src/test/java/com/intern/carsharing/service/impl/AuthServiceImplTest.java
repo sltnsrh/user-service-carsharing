@@ -212,7 +212,6 @@ class AuthServiceImplTest {
         Mockito.when(userService.findByEmail(BOB_USERNAME)).thenReturn(user);
         Mockito.when(jwtTokenProvider.getUserName(any(String.class))).thenReturn(BOB_USERNAME);
         Mockito.when(blacklistRepository.isLoggedOut(TOKEN)).thenReturn(false);
-        Mockito.when(blacklistRepository.add(any(BlackList.class))).thenReturn(null);
         var actual = authService.logout(TOKEN);
         Assertions.assertNotNull(actual);
         Assertions.assertTrue(actual.toString().contains(SUCCESS_LOGOUT));
