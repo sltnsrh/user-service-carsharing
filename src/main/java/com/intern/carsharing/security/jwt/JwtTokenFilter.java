@@ -41,8 +41,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 .resolveToken(servletRequest.getHeader(AUTHORIZATION_HEADER));
         if (token != null) {
             if (blacklistRepository.isLoggedOut(token) || userFailedAuthentication(token)) {
-                log.info("The user is logged out or authentication failed. Username: "
-                        + jwtTokenProvider.getUserName(token));
+                log.info("The user is logged out or authentication failed");
                 setUnauthorizedResponseException(servletResponse);
                 return;
             }

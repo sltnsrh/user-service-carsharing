@@ -2,7 +2,6 @@ package com.intern.carsharing.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.AuthTokenException;
-import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.User;
 import com.intern.carsharing.model.dto.request.LoginRequestDto;
@@ -125,11 +124,8 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.resolveToken(bearerToken);
         jwtTokenProvider.validateToken(token);
         User user = userService.findByEmail(jwtTokenProvider.getUserName(token));
-        var blackList = new BlackList();
-        blackList.setUserId(user.getId());
-        blackList.setJwtToken(token);
         if (!blacklistRepository.isLoggedOut(token)) {
-            blacklistRepository.add(blackList);
+            blacklistRepository.add(token, user.getEmail());
         }
         refreshTokenService.checkAndDeleteOldRefreshTokens(user);
         return objectMapper.createObjectNode().put("message", "Logout successful!");

@@ -1,9 +1,7 @@
 package com.intern.carsharing.repository;
 
-import com.intern.carsharing.model.BlackList;
-
 public interface BlacklistRepository {
-    void add(BlackList blackList);
+    void add(String token, String username);
 
     boolean isLoggedOut(String token);
 }

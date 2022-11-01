@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intern.carsharing.exception.AuthTokenException;
 import com.intern.carsharing.exception.RefreshTokenException;
-import com.intern.carsharing.model.BlackList;
 import com.intern.carsharing.model.RefreshToken;
 import com.intern.carsharing.model.Role;
 import com.intern.carsharing.model.Status;
