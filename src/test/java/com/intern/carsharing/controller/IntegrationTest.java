@@ -11,14 +11,19 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers
 public abstract class IntegrationTest {
     protected static final String USER_EMAIL = "user@gmail.com";
+    protected static final int REDIS_HOST = 6379;
     private static final MySQLContainer<?> container;
+    private static final GenericContainer<?> redisServer;
+
     @Autowired
     protected ObjectMapper objectMapper;
     protected MockMvc mockMvc;
@@ -28,6 +33,11 @@ public abstract class IntegrationTest {
     static {
         container = new MySQLContainer<>("mysql:latest");
         container.start();
+        redisServer = new GenericContainer<>(DockerImageName.parse("redis:latest"))
+                .withExposedPorts(REDIS_HOST);
+        redisServer.start();
+        System.setProperty("spring.redis.host", redisServer.getHost());
+        System.setProperty("spring.redis.port", redisServer.getMappedPort(REDIS_HOST).toString());
     }
 
     @DynamicPropertySource

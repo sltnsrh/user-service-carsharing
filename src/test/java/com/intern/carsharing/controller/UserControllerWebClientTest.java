@@ -49,8 +49,12 @@ public class UserControllerWebClientTest extends IntegrationTest {
     }
 
     @AfterEach
-    void close() throws IOException {
-        mockCarWebServer.shutdown();
+    void close() {
+        try {
+            mockCarWebServer.shutdown();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't close mockCarWebServer");
+        }
     }
 
     @Test
