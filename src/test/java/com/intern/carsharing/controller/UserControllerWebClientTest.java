@@ -81,7 +81,7 @@ public class UserControllerWebClientTest extends IntegrationTest {
     void getCarStatisticsWithValidData() throws Exception {
         User carOwnerFromDb = userRepository.findUserByEmail(CAR_OWNER_EMAIL).orElseThrow();
         CarDto carDto = new CarDto();
-        carDto.setCarOwnerId(carOwnerFromDb.getId());
+        carDto.setOwnerId(carOwnerFromDb.getId());
         mockCarWebServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .addHeader("Content-type", "application/json")
@@ -109,7 +109,7 @@ public class UserControllerWebClientTest extends IntegrationTest {
     void getCarStatisticsWithValidDataAndNoOrders() throws Exception {
         User carOwnerFromDb = userRepository.findUserByEmail(CAR_OWNER_EMAIL).orElseThrow();
         CarDto carDto = new CarDto();
-        carDto.setCarOwnerId(carOwnerFromDb.getId());
+        carDto.setOwnerId(carOwnerFromDb.getId());
         mockCarWebServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .addHeader("Content-type", "application/json")
@@ -155,8 +155,8 @@ public class UserControllerWebClientTest extends IntegrationTest {
     void changeCarStatusWithValidData() throws Exception {
         User carOwnerFromDb = userRepository.findUserByEmail(CAR_OWNER_EMAIL).orElseThrow();
         CarDto carDto = new CarDto();
-        carDto.setCarStatus("LOCKED");
-        carDto.setCarOwnerId(carOwnerFromDb.getId());
+        carDto.setStatus("LOCKED");
+        carDto.setOwnerId(carOwnerFromDb.getId());
         mockCarWebServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .addHeader("Content-type", "application/json")
@@ -165,8 +165,8 @@ public class UserControllerWebClientTest extends IntegrationTest {
                 .setResponseCode(200)
                 .addHeader("Content-type", "application/json")
                 .setBody("{}"));
-        ChangeCarStatusRequestDto requestDto = new ChangeCarStatusRequestDto();
-        requestDto.setStatus("FREE");
+        ChangeCarStatusRequestDto requestDto =
+                new ChangeCarStatusRequestDto(carDto.getId(), "FREE");
         Mockito.when(urlService.getCarServiceUrl()).thenReturn(CAR_CLIENT_BASE_URL);
         String jwt = jwtTokenProvider
                 .createToken(carOwnerFromDb.getEmail(), carOwnerFromDb.getRoles());

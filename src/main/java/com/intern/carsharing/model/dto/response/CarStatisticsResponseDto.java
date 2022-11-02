@@ -14,13 +14,13 @@ public class CarStatisticsResponseDto {
     private double fuelLevelLiter;
     private double fuelConsumptionLitersPer100Km;
     private String licensePlate;
-    private String carBodyStyle;
-    private String carClass;
-    private String carStatus;
+    private String bodyStyle;
+    private String classOfCar;
+    private String status;
     private String engineType;
     private String machineDriveType;
     private String transmission;
-    private Long carOwnerId;
+    private Long ownerId;
     private CoordinatesDto coordinates;
     private int tripsNumber;
     private BigDecimal generalIncome;

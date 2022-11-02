@@ -22,15 +22,14 @@ public class CarRegistrationRequestDto {
     @ApiModelProperty(example = "BC1234AB")
     private String licensePlate;
     @ApiModelProperty(example = "sedan")
-    @JsonProperty("carBodyStyle")
+    @JsonProperty("bodyStyle")
     private String bodyType;
     @ApiModelProperty(example = "REAR_WHEEL_DRIVE")
     @JsonProperty("machineDriveType")
     private String wheelsDriveType;
     @ApiModelProperty(example = "PREMIUM")
-    private String carClass;
+    private String classOfCar;
     @ApiModelProperty(example = "FREE")
-    @JsonProperty("carStatus")
     private String status;
     @ApiModelProperty(example = "gasoline")
     private String engineType;
@@ -39,5 +38,5 @@ public class CarRegistrationRequestDto {
     @ApiModelProperty("\"latitude\": 49.84, \"longitude\": 24.07")
     private CoordinatesDto coordinates;
     @ApiModelProperty(example = "1")
-    private Long carOwnerId;
+    private Long ownerId;
 }

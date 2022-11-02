@@ -33,9 +33,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
 class CarClientServiceImplTest {
-    private static final String CAR_BODY_SIMPLE = "{\"id\": 1,\"carOwnerId\": 1}";
+    private static final String CAR_BODY_SIMPLE = "{\"id\": 1,\"ownerId\": 1}";
     private static final String CAR_LOCKED_BODY_SIMPLE =
-            "{\"id\": 1,\"carStatus\": \"LOCKED\",\"carOwnerId\": 1}";
+            "{\"id\": 1,\"status\": \"LOCKED\",\"ownerId\": 1}";
     private static final String CAR_CLIENT_BASE_URL = "http://localhost:8084";
     private static final String JWT_AUTH_TOKEN = "token";
     @InjectMocks
@@ -160,8 +160,8 @@ class CarClientServiceImplTest {
                 .addHeader("Content-type", "application/json")
                 .setBody("{\n"
                         + "    \"id\": 1,\n"
-                        + "    \"carStatus\": \"RENTED\",\n"
-                        + "    \"carOwnerId\": 1\n"
+                        + "    \"status\": \"RENTED\",\n"
+                        + "    \"ownerId\": 1\n"
                         + "}"));
         ChangeCarStatusRequestDto requestDto = new ChangeCarStatusRequestDto();
         requestDto.setStatus("FREE");

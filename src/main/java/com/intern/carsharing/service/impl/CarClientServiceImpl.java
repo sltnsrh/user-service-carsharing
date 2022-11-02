@@ -78,7 +78,7 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
     public ResponseEntity<Object> addCarToRent(
             Long userId, CarRegistrationRequestDto requestDto, String bearerToken) {
         permissionService.check(userId);
-        requestDto.setCarOwnerId(userId);
+        requestDto.setOwnerId(userId);
         try {
             return executeRequest(requestDto, bearerToken);
         } catch (WebClientResponseException e) {
@@ -115,15 +115,17 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         checkIfCarNotRented(car);
         try {
             log.info("Sending request to: "
-                    + urlService.getCarServiceUrl() + "cars/status/" + carId);
+                    + urlService.getCarServiceUrl() + "cars/change-car-status");
+            requestDto.setCarId(carId);
             Object response = WebClient.builder().baseUrl(urlService.getCarServiceUrl()).build()
                     .patch()
                     .uri(uriBuilder -> uriBuilder
-                            .path("cars/status/" + carId)
-                            .queryParam("carStatus", requestDto.getStatus())
+                            .path("cars/change-car-status")
                             .build()
                     )
                     .header(HttpHeaders.AUTHORIZATION, bearerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(requestDto))
                     .retrieve()
                     .bodyToMono(Object.class)
                     .block();
@@ -133,15 +135,15 @@ public class CarClientServiceImpl extends ClientService implements CarClientServ
         }
     }
 
-    private void checkIfCarBelongsUser(CarDto car, Long userId, Long carId) {
-        if (!Objects.equals(car.getCarOwnerId(), userId)) {
+    private void checkIfCarBelongsUser(CarDto car, long userId, long carId) {
+        if (!Objects.equals(car.getOwnerId(), userId)) {
             throw new CarNotFoundException("Car with id: " + carId
                     + " doesn't belong to the user with id: " + userId);
         }
     }
 
     private void checkIfCarNotRented(CarDto car) {
-        if (car.getCarStatus().equals(RENTED_STATUS)) {
+        if (car.getStatus().equals(RENTED_STATUS)) {
             throw new CarIsRentedException("Your car is rented now, "
                     + "you can't change the status");
         }
